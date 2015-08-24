@@ -2,7 +2,7 @@
 import requests
 import json
 
-api_key = "db7d9defcb84b001"
+api_key = "" #Supply your API key here
 
 
 def getinfo(sparam):  #Use this - faster
