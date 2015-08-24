@@ -133,15 +133,15 @@ def tstamp(t): #Return string of human-readable time from t (unix time)
     st = str(datetime.datetime.fromtimestamp(float(t)).strftime('%Y-%m-%d %H:%M:%S'))
     return st
 
-def readRoom(room):					
-	bestand = open('arooms.txt', 'r')
-	for line in bestand:
-		if room in line:
-			rstatus = True
-			return rstatus
-		else:
-			rstatus = False
-			return rstatus
+#def readRoom(room):					
+#	bestand = open('arooms.txt', 'r')
+#	for line in bestand:
+#		if room in line:
+#			rstatus = True
+#			return rstatus
+#		else:
+#			rstatus = False
+#			return rstatus
 
 def blist(user):					
 	bestand = open('blacklist.txt', 'r')
@@ -524,7 +524,7 @@ class PinchyBot(ch.RoomManager):  #Main class
         rand = derpi.randimg(args, False)
         room.message(rand)
 
-
+""""
       elif cmd.startswith("dex."):   #Pokedex
        sw = cmd.split(".", 1)[1]
        if sw == 'name':
@@ -555,6 +555,7 @@ class PinchyBot(ch.RoomManager):  #Main class
          room.message("#494-#649")
        elif sw == 'gen6':
          room.message("#650-#718")
+""""
 
 
       elif cmd == "quoteadd": #Probably dosen't work.
