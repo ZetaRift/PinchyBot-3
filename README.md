@@ -7,6 +7,8 @@ You are free to use and change the bot's code however you want, please note that
 The details for the 'pinchybot' account on chatango will not be shared whatsoever, you will have to have the bot use another account.
 
 # Depends
+You can use 'pip install' to install the required python libraries.
+
 lxml
 
 requests
