@@ -1,0 +1,17 @@
+{
+"Name":"Foobar",
+"Pass":"secretpassword",
+"Rooms":[
+"room-1",
+"room-2"
+],
+"Admins":[
+"user1",
+"user2"
+],
+"FontColor":"FFF",
+"NameColor":"FFF",
+"FontSize":14,
+"Greet":false
+
+}
