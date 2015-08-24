@@ -30,7 +30,7 @@ You must create settings.json for the bot to run, the required JSON elements are
 
 "Rooms" String array: A list of rooms for the bot to join, it can be as many as you want
 
-"Admins" String array: List of users for the bot to considered as "botadmins", gives access to some commands such as eval
+"Admins" String array: List of users for the bot to consider as "botadmins", gives access to some commands such as 'eval'
 
 "FontColor" String: 3 digit hexadecimal color code for the bot's text color, #000 is black, #FFF is white
 
