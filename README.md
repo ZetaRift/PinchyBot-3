@@ -38,4 +38,4 @@ You must create settings.json for the bot to run, the required JSON elements are
 
 "FontSize" Integer: Font size for the bot's text
 
-"Greet" Boolean: For the bot to greet a joining user, true will greet users, false will omit greets
+"Greet" Bool: For the bot to greet a joining user, true will greet users, false will omit greets
