@@ -7,9 +7,8 @@ import re
  
 #To grab video stats off a youtube video using JSON
 
-#This is broken because youtube changed its API, bullshit changes being made
 
-api_key = ""
+api_key = "" #As of v3, an API key is required.
 
 def iso8601_time(timestr): #Youtube data v3 API gives out ISO 8601 time format for length of videos
  iso_8601_re = re.compile('P(?P<year>[0-9]*Y)?(?P<month>[0-9]*M)?(?P<week>[0-9]*W)?(?P<day>[0-9]*D)?(T)?(?P<hour>[0-9]*H)?(?P<minute>[0-9]*M)?(?P<second>[0-9]*S)?')
