@@ -1,8 +1,10 @@
 # PinchyBot-3
 PinchyBot for Python 3
 
+# License
+You are free to use and change the bot's code however you want, please note that you must provide credit for the original creator of the bot.
 
-
+The details for the 'pinchybot' account on chatango will not be shared whatsoever, you will have to have the bot use another account.
 
 # Depends
 lxml
