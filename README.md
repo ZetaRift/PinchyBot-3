@@ -6,6 +6,9 @@ PinchyBot for Python 3
 
 # Depends
 lxml
+
 requests
+
 pytz (For grabbing timezone)
+
 goslate (For the goslate command)
