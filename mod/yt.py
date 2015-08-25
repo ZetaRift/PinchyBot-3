@@ -20,7 +20,7 @@ def iso8601_time(timestr): #Youtube data v3 API gives out ISO 8601 time format f
   return_time = return_time + year + 'y '
  if ftime.group('month'):
   month = ftime.group('month').rstrip('M')
-  return_time = return_time + month + 'M '
+  return_time = return_time + month + 'Mo '
  if ftime.group('week'):
   week = ftime.group('week').rstrip('W')
   return_time = return_time + week + 'w '
@@ -29,13 +29,13 @@ def iso8601_time(timestr): #Youtube data v3 API gives out ISO 8601 time format f
   return_time = return_time + day + 'd '
  if ftime.group('hour'):
   hour = ftime.group('hour').rstrip('H')
-  return_time = return_time + hour + 'h '
+  return_time = return_time + hour + 'H '
  if ftime.group('minute'):
   minute = ftime.group('minute').rstrip('M')
-  return_time = return_time + minute + 'm '
+  return_time = return_time + minute + 'M '
  if ftime.group('second'):
   second = ftime.group('second').rstrip('S')
-  return_time = return_time + second + 's '
+  return_time = return_time + second + 'S'
 
  return return_time
  
@@ -52,7 +52,7 @@ _downvote_count = lambda vinfo: int(vinfo['items'][0]['statistics']['dislikeCoun
  
 def stats_string(video_id):   #something useless
     vinfo = fetch_video_info(video_id)
-    return "[YouTube: {title} ({length}) | Views: {view_count} | Votes: {upvote_count} up - {downvote_count} down]".format(
+    return "[YouTube: {title} | Length: {length} | Views: {view_count} | Votes: {upvote_count} up - {downvote_count} down]".format(
         title=_title(vinfo),
         view_count=_view_count(vinfo),
         upvote_count=_upvote_count(vinfo),
