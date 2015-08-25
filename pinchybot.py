@@ -44,9 +44,9 @@ from PIL import Image
 from pytz import reference
 
 ################################################################
-#Date of most recent minor or major change
+#Major.Minor.Micro
 ################################################################
-version_string = "2015-08-12"
+version_string = "1.8.6"
 
 ################################################################
 #Some global variables
