@@ -809,7 +809,7 @@ class PinchyBot(ch.RoomManager):  #Main class
 #Start of URL parsing
 ################################################################
 
-      elif url:
+     elif url:
       if user.name == conf["Name"].lower():
        print("Not parsing own URL")
       else:
@@ -818,7 +818,11 @@ class PinchyBot(ch.RoomManager):  #Main class
         print("URL: {url}".format(url=url.group(0)))
 
         if re.match("(https://derpibooru[.]org\S+)", url.group(0)):
-         num = url.group(0).split("g/", 1)[1]
+         if re.match("(https://derpibooru[.]org/images/\S+)", url.group(0)):
+          num = url.group(0).split("images/", 1)[1]
+         else:
+          num = url.group(0).split("org/", 1)[1]
+
          num = num.split("?")[0]
          msg = derpi.stats_string(num)
          if msg is None:
@@ -828,7 +832,11 @@ class PinchyBot(ch.RoomManager):  #Main class
           room.message(msg[1], True)
 
         elif re.match("(https://derpiboo[.]ru\S+)", url.group(0)):
-         num = url.group(0).split("u/", 1)[1]
+         if re.match("(https://derpiboo[.]ru/images/\S+)", url.group(0)):
+          num = url.group(0).split("images/", 1)[1]
+         else:
+          num = url.group(0).split("ru/", 1)[1]
+
          num = num.split("?")[0]
          msg = derpi.stats_string(num)
          if msg is None:
@@ -878,8 +886,12 @@ class PinchyBot(ch.RoomManager):  #Main class
        elif re.match("(http://\S+)", url.group(0)):
         print("URL: {url}".format(url=url.group(0)))
 
-        if re.match("(http://derpibooru[.]org\S+)", url.group(0)):  #Starting here is URLs the bot will ignore, this includes image URLs
-         num = url.group(0).split("g/", 1)[1]
+        if re.match("(http://derpibooru[.]org\S+)", url.group(0)):
+         if re.match("(http://derpibooru[.]org/images/\S+)", url.group(0)):
+          num = url.group(0).split("images/", 1)[1]
+         else:
+          num = url.group(0).split("org/", 1)[1]
+
          num = num.split("?")[0]
          msg = derpi.stats_string(num)
          if msg is None:
@@ -889,7 +901,11 @@ class PinchyBot(ch.RoomManager):  #Main class
           room.message(msg[1], True)
 
         elif re.match("(http://derpiboo[.]ru\S+)", url.group(0)):
-         num = url.group(0).split("u/", 1)[1]
+         if re.match("(http://derpiboo[.]ru/images/\S+)", url.group(0)):
+          num = url.group(0).split("images/", 1)[1]
+         else:
+          num = url.group(0).split("ru/", 1)[1]
+
          num = num.split("?")[0]
          msg = derpi.stats_string(num)
          if msg is None:
@@ -916,7 +932,7 @@ class PinchyBot(ch.RoomManager):  #Main class
           
         elif re.match("(http://youtu[.]be\S+)", url.group(0)):
          try:
-          vid = message.body.split(".be/", 1)[1]
+          vid = url.group(0).split(".be/", 1)[1]
           string = yt.stats_string(vid)
           room.message(string, True) 
          except:
