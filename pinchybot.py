@@ -847,7 +847,7 @@ class PinchyBot(ch.RoomManager):  #Main class
 
         elif re.match("(https://www[.]youtube[.]com\S+)", url.group(0)):
          try:
-          vid = message.body.split("watch?v=", 1)[1]
+          vid = url.group(0).split("watch?v=", 1)[1]
           string = yt.stats_string(vid)
           room.message(string, True) 
          except:
@@ -855,7 +855,7 @@ class PinchyBot(ch.RoomManager):  #Main class
           
         elif re.match("(https://youtu[.]be\S+)", url.group(0)):
          try:
-          vid = message.body.split(".be/", 1)[1]
+          vid = url.group(0).split(".be/", 1)[1]
           string = yt.stats_string(vid)
           room.message(string, True) 
          except:
