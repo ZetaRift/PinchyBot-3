@@ -809,7 +809,7 @@ class PinchyBot(ch.RoomManager):  #Main class
 #Start of URL parsing
 ################################################################
 
-     elif url:
+      elif url:
       if user.name == conf["Name"].lower():
        print("Not parsing own URL")
       else:
@@ -847,7 +847,7 @@ class PinchyBot(ch.RoomManager):  #Main class
           
         elif re.match("(https://youtu[.]be\S+)", url.group(0)):
          try:
-          vid = message.body.split("/", 1)[1]
+          vid = message.body.split(".be/", 1)[1]
           string = yt.stats_string(vid)
           room.message(string, True) 
          except:
@@ -916,7 +916,7 @@ class PinchyBot(ch.RoomManager):  #Main class
           
         elif re.match("(http://youtu[.]be\S+)", url.group(0)):
          try:
-          vid = message.body.split("/", 1)[1]
+          vid = message.body.split(".be/", 1)[1]
           string = yt.stats_string(vid)
           room.message(string, True) 
          except:
