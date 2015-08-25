@@ -12,6 +12,7 @@ Changes are being applied to the derpibooru API
 2015-07-23: stats_string now returns a tuple with two messages, first one being the image info(Excluding the tags), and the second containing the tags. This has been marked as a major change
 2015-08-03: randimg searches for anything specified and returns a random image with the tag or tag combination
 2015-08-08: randimg requires two arguments, first is the search string, second is the boolean for unfiltering
+2015-08-25: Added in uploaded and updated time and shorter way of tag checking for questionable/explicit/grimdark
 
 """
 
@@ -19,6 +20,18 @@ logging.basicConfig(filename='logs/derpi.log',level=logging.WARNING)
 templist = ""
 
 api_key = "" #Optional API key goes here, it can be accessed on the account settings page for your account on Derpibooru
+
+def derpitimestamp(time_string): #Returns in Y-m-d H:M format, timestamp is in ISO 8601 format
+ ts_re = re.compile("(?P<year>[0-9]*-)?(?P<month>[0-9]*-)(?P<day>[0-9]*)?(T)?(?P<hour>[0-9]*:)?(?P<minute>[0-9]*:)?(?P<second>[0-9]*.)?(?P<millisecond>[0-9]*.)")
+ ftime = re.match(ts_re, time_string)
+ timestamp_str = "{y}-{mo}-{d} {h}:{m}".format(
+  y=ftime.group("year").rstrip("-"),
+  mo=ftime.group("month").rstrip("-"),
+  d=ftime.group("day"),
+  h=ftime.group("hour").rstrip(":"),
+  m=ftime.group("minute").rstrip(":")
+  )
+ return timestamp_str
 
 def randimg(t, nofilter):
     if nofilter == True:
@@ -107,6 +120,8 @@ _tags = lambda img_info: img_info['tags']
 _chk_tags = lambda img_info: img_info['tag_ids']
 _thumb = lambda img_info: "http:"+img_info['representations']['thumb']
 _format = lambda img_info: img_info['original_format']
+_created_time = lambda img_info: img_info['created_at']
+_updated_time = lambda img_info: img_info['updated_at']
 
 
 def stats_string(numid):
@@ -114,78 +129,36 @@ def stats_string(numid):
     if img_info is None: #Return none if fetch_info sees a non-200 HTTP status code
      return None
     else:
+     uled_time = derpitimestamp(_created_time(img_info))
+     upd_time = derpitimestamp(_updated_time(img_info))
      if len(_chk_tags(img_info)) >= 25:
       templist = "[Too many tags]"
      else:
       templist = _tags(img_info)
      if "explicit" in _chk_tags(img_info):
-      return ("<b>(Explicit)</b> http://derpibooru.org/{num} | <b>Score</b>: {score} ({upv} up / {dwv} down) with {faves} faves | <b>Comment count</b>: {cmts} | <b>Uploaded by</b>: {uled}".format(
-         score=_score(img_info),
-         upv=_upv(img_info),
-         dwv=_dwv(img_info),
-         faves=_faves(img_info),
-         cmts=_cmts(img_info),
-         uled=_uled(img_info),
-         num=numid
-         ),
-         "<b>Image #{num} tags</b>: {tgs}".format(
-         tgs=templist,
-         num=numid
-         ))
+      thumb = "(<b>Explicit</b>)"
      elif "questionable" in _chk_tags(img_info):
-      return ("<b>(Questionable)</b> http://derpibooru.org/{num} | <b>Score</b>: {score} ({upv} up / {dwv} down) with {faves} faves | <b>Comment count</b>: {cmts} | <b>Uploaded by</b>: {uled}".format(
-         score=_score(img_info),
-         upv=_upv(img_info),
-         dwv=_dwv(img_info),
-         faves=_faves(img_info),
-         cmts=_cmts(img_info),
-         uled=_uled(img_info),
-         num=numid
-         ),
-         "<b>Image #{num} tags</b>: {tgs}".format(
-         tgs=templist,
-         num=numid
-         ))
+      thumb = "(<b>Questionable</b>)"
      elif "grimdark" in _chk_tags(img_info):
-      return ("<b>(Grimdark)</b> http://derpibooru.org/{num} | <b>Score</b>: {score} ({upv} up / {dwv} down) with {faves} faves | <b>Comment count</b>: {cmts} | <b>Uploaded by</b>: {uled}".format(
-         score=_score(img_info),
-         upv=_upv(img_info),
-         dwv=_dwv(img_info),
-         faves=_faves(img_info),
-         cmts=_cmts(img_info),
-         uled=_uled(img_info),
-         num=numid
-         ),
-         "<b>Image #{num} tags</b>: {tgs}".format(
-         tgs=templist,
-         num=numid
-         ))
-     elif _format(img_info) == "gif":
-      return ("http://derpibooru.org/{num} | <b>Score</b>: {score} ({upv} up / {dwv} down) with {faves} faves | <b>Comment count</b>: {cmts} | <b>Uploaded by</b>: {uled}".format(
-         score=_score(img_info),
-         upv=_upv(img_info),
-         dwv=_dwv(img_info),
-         faves=_faves(img_info),
-         cmts=_cmts(img_info),
-         uled=_uled(img_info),
-         num=numid
-         ),
-         "<b>Image #{num} tags</b>: {tgs}".format(
-         tgs=templist,
-         num=numid
-         ))
+      thumb = "(<b>Grimdark</b>)"
+     elif  _format(img_info) == "gif":
+      thumb = ''
      else:
-      return ("{thumb} http://derpibooru.org/{num} | <b>Score</b>: {score} ({upv} up / {dwv} down) with {faves} faves | <b>Comment count</b>: {cmts} | <b>Uploaded by</b>: {uled}".format(
-         score=_score(img_info),
-         upv=_upv(img_info),
-         dwv=_dwv(img_info),
-         faves=_faves(img_info),
-         cmts=_cmts(img_info),
-         uled=_uled(img_info),
-         num=numid,
-         thumb=_thumb(img_info)
-         ),
-         "<b>Image #{num} tags</b>: {tgs}".format(
-         tgs=templist,
-         num=numid
-         ))
+      thumb = _thumb(img_info)
+      
+     return ("{thumb} http://derpibooru.org/{num} | <b>Uploaded at</b>: {uledtime}(Updated at: {udtime}) | <b>Score</b>: {score} ({upv} up / {dwv} down) with {faves} faves | <b>Comment count</b>: {cmts} | <b>Uploaded by</b>: {uled}".format(
+        thumb=thumb,
+        uledtime=uled_time,
+        udtime=upd_time,
+        score=_score(img_info),
+        upv=_upv(img_info),
+        dwv=_dwv(img_info),
+        faves=_faves(img_info),
+        cmts=_cmts(img_info),
+        uled=_uled(img_info),
+        num=numid
+        ),
+        "<b>Image #{num} tags</b>: {tgs}".format(
+        tgs=templist,
+        num=numid
+        ))
