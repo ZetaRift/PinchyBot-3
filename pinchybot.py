@@ -46,7 +46,7 @@ from pytz import reference
 ################################################################
 #Major.Minor.Micro
 ################################################################
-version_string = "1.81.0"
+version_string = "1.88.0"
 
 ################################################################
 #Some global variables
@@ -813,144 +813,47 @@ class PinchyBot(ch.RoomManager):  #Main class
       if user.name == conf["Name"].lower():
        print("Not parsing own URL")
       else:
-      #HTTPS start
-       if re.match("(https://\S+)", url.group(0)):
-        print("URL: {url}".format(url=url.group(0)))
-
-        if re.match("(https://derpibooru[.]org\S+)", url.group(0)):
-         if re.match("(https://derpibooru[.]org/images/\S+)", url.group(0)):
-          num = url.group(0).split("images/", 1)[1]
-         else:
-          num = url.group(0).split("org/", 1)[1]
-
-         num = num.split("?")[0]
-         msg = derpi.stats_string(num)
-         if msg is None:
-          room.message("Dosen't exist?")
-         else:
-          room.message(msg[0], True)
-          room.message(msg[1], True)
-
-        elif re.match("(https://derpiboo[.]ru\S+)", url.group(0)):
-         if re.match("(https://derpiboo[.]ru/images/\S+)", url.group(0)):
-          num = url.group(0).split("images/", 1)[1]
-         else:
-          num = url.group(0).split("ru/", 1)[1]
-
-         num = num.split("?")[0]
-         msg = derpi.stats_string(num)
-         if msg is None:
-          room.message("Dosen't exist?")
-         else:
-          room.message(msg[0], True)
-          room.message(msg[1], True)
-
-        elif re.match("(https://www[.]youtube[.]com\S+)", url.group(0)):
-         try:
-          vid = url.group(0).split("watch?v=", 1)[1]
-          string = yt.stats_string(vid)
-          room.message(string, True) 
-         except:
-          print(traceback.format_exc())
-          
-        elif re.match("(https://youtu[.]be\S+)", url.group(0)):
-         try:
-          vid = url.group(0).split(".be/", 1)[1]
-          string = yt.stats_string(vid)
-          room.message(string, True) 
-         except:
-          print(traceback.format_exc())
-
-        elif url.group(0).startswith ("https://img.pokemondb.net/artwork/"):
-         ignoreurl()
-
-        elif url.group(0).endswith (".jpg"):
-         imginfo = imageparse(url.group(0))
-         room.message("JPG image, {size}, {w} x {h}".format(size=imginfo[0],w=imginfo[1],h=imginfo[2]))
-
-        elif url.group(0).endswith (".png"):
-         imginfo = imageparse(url.group(0))
-         room.message("PNG image, {size}, {w} x {h}".format(size=imginfo[0],w=imginfo[1],h=imginfo[2]))
-        elif url.group(0).endswith (".gif"):
-         imginfo = imageparse(url.group(0))
-         room.message("GIF image, {size}, {w} x {h}".format(size=imginfo[0],w=imginfo[1],h=imginfo[2]))
-
-        else:	#Any URLs that aren't ignored. The 'www' issue could pose a problem though
-         title = urlparse(url.group(0))
-         room.message(title, True)
-
-#end of https url parsing
-	
-#start of http url parsing
-
-       elif re.match("(http://\S+)", url.group(0)):
-        print("URL: {url}".format(url=url.group(0)))
-
-        if re.match("(http://derpibooru[.]org\S+)", url.group(0)):
-         if re.match("(http://derpibooru[.]org/images/\S+)", url.group(0)):
-          num = url.group(0).split("images/", 1)[1]
-         else:
-          num = url.group(0).split("org/", 1)[1]
-
-         num = num.split("?")[0]
-         msg = derpi.stats_string(num)
-         if msg is None:
-          room.message("Dosen't exist?")
-         else:
-          room.message(msg[0], True)
-          room.message(msg[1], True)
-
-        elif re.match("(http://derpiboo[.]ru\S+)", url.group(0)):
-         if re.match("(http://derpiboo[.]ru/images/\S+)", url.group(0)):
-          num = url.group(0).split("images/", 1)[1]
-         else:
-          num = url.group(0).split("ru/", 1)[1]
-
-         num = num.split("?")[0]
-         msg = derpi.stats_string(num)
-         if msg is None:
-          room.message("Dosen't exist?")
-         else:
-          room.message(msg[0], True)
-          room.message(msg[1], True)
-          
-        elif re.match("(http://www[.]fimfiction[.]net\S+)", url.group(0)):
-         try:
-          msgstr = fimfiction.statstring(url.group(0))
-          room.message(msgstr, True)
-         except:
-          print(traceback.format_exc())
-
-
-        elif re.match("(http://www[.]youtube[.]com\S+)", url.group(0)):
-         try:
-          vid = url.group(0).split("watch?v=", 1)[1]
-          string = yt.stats_string(vid)
-          room.message(string, True) 
-         except:
-          print("derp")
-          
-        elif re.match("(http://youtu[.]be\S+)", url.group(0)):
-         try:
-          vid = url.group(0).split(".be/", 1)[1]
-          string = yt.stats_string(vid)
-          room.message(string, True) 
-         except:
-          print(traceback.format_exc())
-          
-        elif url.group(0).endswith (".jpg"):
-         imginfo = imageparse(url.group(0))
-         room.message("JPG image, {size}, {w} x {h}".format(size=imginfo[0],w=imginfo[1],h=imginfo[2]))
-
-        elif url.group(0).endswith (".png"):
-         imginfo = imageparse(url.group(0))
-         room.message("PNG image, {size}, {w} x {h}".format(size=imginfo[0],w=imginfo[1],h=imginfo[2]))
-        elif url.group(0).endswith (".gif"):
-         imginfo = imageparse(url.group(0))
-         room.message("GIF image, {size}, {w} x {h}".format(size=imginfo[0],w=imginfo[1],h=imginfo[2]))
+       if re.match("(https?://(www.)?((derpibooru[.]org)|(derpiboo[.]ru))\S+)", url.group(0)): #Deripbooru URLs
+        derpipattern = "(https?://(www.)?((derpibooru[.]org)|(derpiboo[.]ru))(/images/)?/?(?P<id>[0-9]*))"
+        reg = re.compile(derpipattern)
+        num = reg.search(url.group(0))
+        msg = derpi.stats_string(num.group("id"))
+        if msg is None:
+         room.message("Dosen't exist?")
         else:
-         title = urlparse(url.group(0))
-         room.message(title, True)
+         room.message(msg[0], True)
+         room.message(msg[1], True)
+
+       elif re.match("(https?://(www.)?((youtube[.]com)|(youtu[.]be))\S+)", url.group(0)): #Youtube URLs
+        ytpattern = "(https://(www[.])?(?P<domain>(youtube[.]com)|(youtu[.]be))\S+)"
+        reg = re.compile(ytpattern)
+        yt_url = reg.search(url.group(0))
+        if yt_url.group("domain") == "youtube.com":
+         id = yt_url.group(0).split("/watch?v=", 1)[1]
+         msg = yt.stats_string(id)
+         room.message(msg, True)
+         #function here
+        elif yt_url.group("domain") == "youtu.be":
+         id = yt_url.group(0).split(".be/", 1)[1]
+         msg = yt.stats_string(id)
+         room.message(msg, True)
+       elif url.group(0).startswith ("https://img.pokemondb.net/artwork/"):
+        ignoreurl()
+
+       elif url.group(0).endswith (".jpg"):
+        imginfo = imageparse(url.group(0))
+        room.message("JPG image, {size}, {w} x {h}".format(size=imginfo[0],w=imginfo[1],h=imginfo[2]))
+
+       elif url.group(0).endswith (".png"):
+        imginfo = imageparse(url.group(0))
+        room.message("PNG image, {size}, {w} x {h}".format(size=imginfo[0],w=imginfo[1],h=imginfo[2]))
+       elif url.group(0).endswith (".gif"):
+        imginfo = imageparse(url.group(0))
+        room.message("GIF image, {size}, {w} x {h}".format(size=imginfo[0],w=imginfo[1],h=imginfo[2]))
+
+       else:	#Any URLs that aren't ignored. The 'www' issue could pose a problem though
+        title = urlparse(url.group(0))
+        room.message(title, True)
 ################################################################
 #End of URL parsing
 ################################################################
