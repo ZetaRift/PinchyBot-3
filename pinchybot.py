@@ -289,6 +289,18 @@ class PinchyBot(ch.RoomManager):  #Main class
   def onLeave(self, room, user):
       ctime = curtime()
       self.safePrint("[{ts}] {user} left {room}".format(ts=ctime,user=user.name,room=room.name))
+ 
+  def onBan(self, room, user, target): #Cannot see bans unless the bot is a moderator in the occurring room.
+   ctime = curtime()
+   print("[{ts}] User {t} banned from {r} by {u}".format(ts=ctime,t=target.name,r=room.name,u=user.name))  
+   
+  def onUnban(self, room, user, target):
+   ctime = curtime()
+   print("[{ts}] User {t} unbanned from {r} by {u}".format(ts=ctime,t=target.name,r=room.name,u=user.name))
+   
+  def onMessageDelete(self, room, user, message):
+   ctime = curtime() 
+   print("[{ts}] ({r}) Message ({u}: {m}) deleted".format(ts=ctime,r=room.name,u=user.name,m=message.body)) 
     
  
   def onMessage(self, room, user, message):
