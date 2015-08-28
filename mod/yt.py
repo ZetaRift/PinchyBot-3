@@ -1,7 +1,6 @@
 from datetime import timedelta
 import time
 import decimal
-import json
 import requests
 import re
  
@@ -41,7 +40,7 @@ def iso8601_time(timestr): #Youtube data v3 API gives out ISO 8601 time format f
  
 def fetch_video_info(video_id):
     r = requests.get('https://www.googleapis.com/youtube/v3/videos?id={id}&key={api_key}&part=snippet,statistics,contentDetails'.format(id=video_id,api_key=api_key))
-    return json.loads(r.text)
+    return r.json()
  
 _title = lambda vinfo: vinfo['items'][0]['snippet']['title']
 _length = lambda vinfo: vinfo['items'][0]['contentDetails']['duration']
