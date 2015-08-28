@@ -37,7 +37,7 @@ import decimal
 import hashlib
 import traceback
 import goslate
-from mod import derpi, fimfiction, yt, gimg, wz, ponycountdown   #Because python 3 hates doing a "from foo import *" even though a __init__.py is present
+from mod import *   #Because python 3 hates doing a "from foo import *" even though a __init__.py is present
 import signal
 from functools import reduce
 from PIL import Image
