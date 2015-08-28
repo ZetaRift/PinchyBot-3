@@ -1,5 +1,4 @@
 import requests
-import json
 import datetime
 import time
 #Pony countdown
@@ -12,7 +11,7 @@ def epsearch(param):
  cur_time = time.time()
  st = param.replace(" ", "%20")
  r = requests.get("http://{h}:{p}/search?q={st}".format(st=st,h=host,p=port))
- j = json.loads(r.text)
+ j = r.json()
  air_date_u = int(j['episodes'][0]['air_date'])
  eptime = str(datetime.datetime.fromtimestamp(j['episodes'][0]['air_date']).strftime('%Y, %B, %d %H:%M'))
  if cur_time >= air_date_u:
@@ -36,7 +35,7 @@ def nextep():
  
  cur_time = time.time()
  r = requests.get("http://{h}:{p}/newest".format(h=host,p=port))
- j = json.loads(r.text)
+ j = r.json()
  air_date = datetime.datetime.fromtimestamp(int(j['episode']['air_date'])).strftime('%Y, %B, %d %H:%M')
  air_date_u = int(j['episode']['air_date'])
  not_time = str(air_date)
