@@ -234,7 +234,11 @@ def ignoreurl():
 def gettimezone():
  localtime = reference.LocalTimezone()
  return localtime.tzname(datetime.datetime.now())
-
+ 
+def restart():
+ py = sys.executable
+ print("Restarting...")
+ os.execl(py, py, * sys.argv)
 
 
 ################################################################
@@ -347,6 +351,11 @@ class PinchyBot(ch.RoomManager):  #Main class
         room.message('Bot admin')
        else:
         room.message('A puny user :3')
+
+      elif cmd == 'restart':
+       status = readAdmin(user.name)
+       if status == True:
+        restart()
 
       elif cmd == 'join':
        status = readAdmin(user.name)
