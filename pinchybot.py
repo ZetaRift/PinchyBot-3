@@ -74,13 +74,23 @@ signal.signal(signal.SIGINT, sighandle)
 
 
 def urlparse(url):    #URL parsing for title. Needs lxml
-     f = requests.get(url)
+     f = requests.get(url, stream=True)
+     content_type = f.headers['Content-Type']
      if f.status_code != 200:
       return str(f.status_code)
      else:
-      s = lxml.html.fromstring(f.content) #lxml wants a consistently undecoded file, so f.content does it
-      title = '[ '+s.find(".//title").text+" ]"
-      return title
+      if re.match("(image\S+?(?P<format>(jpeg)|(png)|(gif)))", content_type):
+       print("Image URL")
+       imgpattern = "(image\S+?(?P<format>(jpeg)|(png)|(gif)))"
+       reg = re.compile(imgpattern)
+       imgformat = reg.search(content_type)
+       s = Image.open(f.raw)
+       msg = "{f} image, {size}, {w} x {h}".format(f=imgformat.group("format").upper(),size=readablesize(int(f.headers["content-length"])),w=s.size[0],h=s.size[1])
+       return msg
+      else:
+       s = lxml.html.fromstring(f.content) #lxml wants a consistently undecoded file, so f.content does it
+       title = '[ '+s.find(".//title").text+" ]"
+       return title
      
 def readablesize(i):
  if i >= 1048576:
@@ -839,17 +849,6 @@ class PinchyBot(ch.RoomManager):  #Main class
          room.message(msg, True)
        elif url.group(0).startswith ("https://img.pokemondb.net/artwork/"):
         ignoreurl()
-
-       elif url.group(0).endswith (".jpg"):
-        imginfo = imageparse(url.group(0))
-        room.message("JPG image, {size}, {w} x {h}".format(size=imginfo[0],w=imginfo[1],h=imginfo[2]))
-
-       elif url.group(0).endswith (".png"):
-        imginfo = imageparse(url.group(0))
-        room.message("PNG image, {size}, {w} x {h}".format(size=imginfo[0],w=imginfo[1],h=imginfo[2]))
-       elif url.group(0).endswith (".gif"):
-        imginfo = imageparse(url.group(0))
-        room.message("GIF image, {size}, {w} x {h}".format(size=imginfo[0],w=imginfo[1],h=imginfo[2]))
 
        else:	#Any URLs that aren't ignored. The 'www' issue could pose a problem though
         title = urlparse(url.group(0))
