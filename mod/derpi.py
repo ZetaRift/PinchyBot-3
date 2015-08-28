@@ -54,7 +54,7 @@ def randimg(t, nofilter):
      return "Status returned {status}".format(status=r.status_code)
      
     else:
-     jso = json.loads(r.text)
+     jso = r.json()
      if jso['total'] == 0:
       return("That tag or tag combination does not exist")
      else:
@@ -70,7 +70,7 @@ def tagsearch(tag):        #Dosen't work because it says "list indices must be i
     if r.status_code != 200: #Back off in events of a non-200 status code
      return "Status returned {status}".format(status=r.status_code)
     else:
-     jso = json.loads(r.text)
+     jso = r.json()
      if jso['total'] == 0:
       return None
      else:
@@ -85,7 +85,7 @@ def tagsp(tag):        #Returns URL of spoiler image, returns None (or null) if 
      return "Status returned {status}".format(status=r.status_code)
 
     else:
-     jso = json.loads(r.text)
+     jso = r.json()
      sp = jso['tag']['spoiler_image_uri']
      if sp is None:
       logging.warning('No spoiler image for tag "{tag}"'.format(tag=tag))
@@ -98,7 +98,7 @@ def thumb(num_id):
     if r.status_code != 200:
      return "Server returned {status}".format(status=r.status_code)
     else:
-     jso = json.loads(r.text)
+     jso = r.json()
      sp = "http:"+jso['representations']['thumb']
      return str(sp)
 
@@ -108,7 +108,7 @@ def fetch_info(numid):
      logging.warning("Server returned {status}")
      return None
     else:
-     return json.loads(r.text)
+     return r.json()
  
 _score = lambda img_info: int(img_info['score'])
 _upv = lambda img_info: int(img_info['upvotes'])
@@ -132,7 +132,7 @@ def stats_string(numid):
      uled_time = derpitimestamp(_created_time(img_info))
      upd_time = derpitimestamp(_updated_time(img_info))
      if len(_chk_tags(img_info)) >= 25:
-      templist = "[Too many tags]"
+      templist = "[Too many tags to show]"
      else:
       templist = _tags(img_info)
      if "explicit" in _chk_tags(img_info):
@@ -146,7 +146,7 @@ def stats_string(numid):
      else:
       thumb = _thumb(img_info)
       
-     return ("{thumb} http://derpibooru.org/{num} | <b>Uploaded at</b>: {uledtime}(Updated at: {udtime}) | <b>Score</b>: {score} ({upv} up / {dwv} down) with {faves} faves | <b>Comment count</b>: {cmts} | <b>Uploaded by</b>: {uled}".format(
+     return ("{thumb} http://derpibooru.org/{num} | <b>Uploaded at</b>: {uledtime} (Updated at: {udtime}) UTC | <b>Score</b>: {score} ({upv} up / {dwv} down) with {faves} faves | <b>Comment count</b>: {cmts} | <b>Uploaded by</b>: {uled}".format(
         thumb=thumb,
         uledtime=uled_time,
         udtime=upd_time,
