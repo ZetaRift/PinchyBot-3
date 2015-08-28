@@ -1,6 +1,5 @@
 #Weather from wunderground (This requires an API key)
 import requests
-import json
 
 api_key = "" #Supply your API key here
 
@@ -12,7 +11,7 @@ def getinfo(sparam):  #Use this - faster
  if r.status_code != 200:
   return None
  else:
-  return json.loads(r.text)
+  return r.json()
  
  
 _lostr = lambda w_info: w_info['current_observation']['display_location']['full'] 
@@ -44,8 +43,3 @@ def info_string(sparam):
     windkph=_wind_km(w_info),
     hum=_humid(w_info)
     )
-
-
-
-
-
