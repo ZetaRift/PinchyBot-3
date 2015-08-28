@@ -9,7 +9,7 @@ def grab_info(story_URL): #Either the number ID or the whole url works
  if r.status_code != 200:
   return None
  else:
-  return json.loads(r.text)
+  return r.json()
   
 
 _title = lambda fic_info: fic_info["story"]["title"]
