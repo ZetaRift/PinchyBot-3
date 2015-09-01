@@ -145,10 +145,9 @@ def stats_string(numid):
      else:
       thumb = _thumb(img_info)
       
-     return ("{thumb} http://derpibooru.org/{num} | <b>Uploaded at</b>: {uledtime} (Updated at: {udtime}) UTC | <b>Score</b>: {score} ({upv} up / {dwv} down) with {faves} faves | <b>Comment count</b>: {cmts} | <b>Uploaded by</b>: {uled}".format(
+     return ("{thumb} http://derpibooru.org/{num} | <b>Uploaded at</b>: {uledtime} UTC by {uled} | <b>Score</b>: {score} ({upv} up / {dwv} down) with {faves} faves | <b>Comment count</b>: {cmts} ".format(
         thumb=thumb,
         uledtime=uled_time,
-        udtime=upd_time,
         score=_score(img_info),
         upv=_upv(img_info),
         dwv=_dwv(img_info),
