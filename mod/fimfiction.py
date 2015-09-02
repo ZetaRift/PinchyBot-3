@@ -21,7 +21,7 @@ _chapters = lambda fic_info: int(fic_info["story"]["chapter_count"])
 _author = lambda fic_info: fic_info["story"]["author"]["name"]
 
 
-def statstring(url):
+def statstring(url): #Use this for parsing out the info.
  fic_info = grab_info(url)
  if fic_info is None:
   return "Nothing"
