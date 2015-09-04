@@ -328,18 +328,31 @@ class PinchyBot(ch.RoomManager):  #Main class
      urlpattern = "(https?://\S+)"
      regex = re.compile(urlpattern)
      url = regex.search(message.body)
+     cmd = '' #Otherwise UnboundLocalError is raised
+     args = ''
 	
-     if message.body[0] == "$":     #Command prefix, it can be changed, but it must only be one character long
+     if message.body:
+      if message.body[0] == "$": #Command prefix.
+       data = message.body[1:].split(" ", 1)
 
-      data = message.body[1:].split(" ", 1)
+       if len(data) > 1: #To treat the second word to EOL as args, eg: "$eval" is the command, and "foo.bar()" is the argument parameter, if only command is issued, argument variable will be null
 
-      if len(data) > 1: #To treat the second word to EOL as args, eg: "$eval" is the command, and "foo.bar()" is the argument parameter, if only command is issued, argument variable will be null
+        cmd, args = data[0], data[1]
 
-       cmd, args = data[0], data[1]
-
-      else:
+       else:
 
         cmd, args = data[0], None
+      elif re.match("((?i)pinchybot, (?P<cmd>(\S+)) *(?P<args>(.*)))", message.body): #Another type of issuing a command to the bot
+       commandpattern = "((?i)pinchybot, (?P<cmd>(\S+)) *(?P<args>(.*)))"
+       command_reg = re.compile(commandpattern)
+       rawcommand = command_reg.search(message.body)
+       cmd = rawcommand.group("cmd")
+       if rawcommand.group("args"):
+        args = rawcommand.group("args")
+       else:
+        args = ''
+       print("command: {s}".format(s=cmd)) #Printing for verbosity, will be removed soon
+       print("args: {s}".format(s=args))
 
 ################################################################
 #Start of commands
