@@ -883,6 +883,10 @@ class PinchyBot(ch.RoomManager):  #Main class
          room.message(msg, True)
        elif url.group(0).startswith ("https://img.pokemondb.net/artwork/"):
         ignoreurl()
+        
+       elif re.match("(https?://(www.)?fimfiction[.]net\S+)", url.group(0)): #FiMFiction URLs
+        msg = fimfiction.statstring(url.group(0))
+        room.message(msg, True)
 
        else:	#Any URLs that aren't ignored. The 'www' issue could pose a problem though
         title = urlparse(url.group(0))
