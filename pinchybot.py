@@ -46,7 +46,7 @@ from pytz import reference
 ################################################################
 #Major.Minor.Micro
 ################################################################
-version_string = "1.9.0"
+version_string = "1.91.1"
 
 ################################################################
 #Some global variables
@@ -561,11 +561,16 @@ class PinchyBot(ch.RoomManager):  #Main class
 
 
       elif cmd == "pony":
+       if room.name in conf['ExplicitRooms']:
+        nofilter = True
+       else:
+        nofilter = False
+        
        if args is None or args.isspace():
-        rand = derpi.randimg(None, False)
+        rand = derpi.randimg(None, nofilter)
         room.message(rand)
        else:
-        rand = derpi.randimg(args, False)
+        rand = derpi.randimg(args, nofilter)
         room.message(rand)
 
 """"
@@ -781,7 +786,10 @@ class PinchyBot(ch.RoomManager):  #Main class
         room.message("Your setting is currently set to Imperial(Default setting), ask the bot owner if you want to change this setting.")
 
       elif cmd == "gimg":
-       room.message(gimg.search(args))
+       if room.name in conf['ExplicitRooms']:
+        room.message(gimg.search(args))
+       else:
+        room.message("No")
 
       elif cmd == "tempconv.":
        sw = cmd.split(".", 1)[1]
