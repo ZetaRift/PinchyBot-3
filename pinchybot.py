@@ -1,13 +1,12 @@
 #!/usr/bin/python3.4
 
 
-#PinchyBot for chatango
+#PinchyBot for chatango by ZetaRift
 """"
 Depends:
 lxml
 requests
 pytz
-goslate
 """
 #Configuration is stored in a JSON file: "Name" string, "Pass" string, "Rooms" string array, "FontColor" string, "NameColor" string, and "FontSize" integer
 
@@ -64,9 +63,8 @@ logging.basicConfig(filename='logs/PinchyBot.log',level=logging.WARNING)
 upt = time.time() #Grab current unix time upon execution
 
 
-
 def sighandle(signal, frame):
- s = Seen()
+ s = seen.Seen()
  s.savefile()
  print("Caught SIGINT, saving and exiting")
  sys.exit(0)
@@ -103,16 +101,6 @@ def readablesize(i):
   return "{s} KB".format(s=str("%.2f" % size))
  else:
   return "{s} Bytes".format(s=str(i))
-     
-def imageparse(url):
-  u = requests.get(url, stream=True, timeout=10)
-  if u.status_code != 200:
-   return ("Err: "+str(u.status_code), "N/A", "N/A")
-  else:
-   s = Image.open(u.raw)
-   fsize = readablesize(int(u.headers["content-length"]))
-   info = (fsize, s.size[0], s.size[1])
-   return info
 
 def slate(tran, lang): #I think they changed the translation API?
     gs = goslate.Goslate()
@@ -145,15 +133,15 @@ def tstamp(t): #Return string of human-readable time from t (unix time)
     st = str(datetime.datetime.fromtimestamp(float(t)).strftime('%Y-%m-%d %H:%M:%S'))
     return st
 
-#def readRoom(room):					
-#	bestand = open('arooms.txt', 'r')
-#	for line in bestand:
-#		if room in line:
-#			rstatus = True
-#			return rstatus
-#		else:
-#			rstatus = False
-#			return rstatus
+def readRoom(room):					
+	bestand = open('arooms.txt', 'r')
+	for line in bestand:
+		if room in line:
+			rstatus = True
+			return rstatus
+		else:
+			rstatus = False
+			return rstatus
 
 def blist(user):					
 	bestand = open('blacklist.txt', 'r')
@@ -236,50 +224,21 @@ def ignoreurl():
 def gettimezone():
  localtime = reference.LocalTimezone()
  return localtime.tzname(datetime.datetime.now())
+
  
 def restart():
  py = sys.executable
- seen = Seen()
+ seen = seen.Seen()
  seen.savefile()
  print("Restarting...")
  os.execl(py, py, * sys.argv)
-
-
-class Seen:
-
- def __init__(self):
-  self.db = dataset.connect('sqlite:///SeenData.db')
-  self.dbtable = self.db["SeenTable"]
-
- def savefile(self): #Use this upon exit
-  print("Committing changes to database...")
-  self.db.commit()
-
- def loadfile(self):
-  print("Loading database")
-  self.db = dataset.connect('sqlite:///SeenData.db')
-  self.dbtable = self.db["SeenTable"]
-
- def search(self, user, room, replace): #Search for user
-  t = self.dbtable.find_one(Username=user)
-  if replace == True:
-   if t:
-    #Update
-    ID = t['id']
-    self.dbtable.update(dict(id=ID, Username=user, Time=curtime(), Room=room), ['id'])
-   else:
-    #Place new row
-    print("Nothing to replace, placing new row")
-    self.dbtable.insert(dict(Username=user, Time=curtime(), Room=room))
-  else:
-   if t:
-    res_tuple = (t['Username'], t['Time'], t['Room'])
-    return res_tuple
-   else:
-    return None
-   #Search and return
+   
+   
+  
+   
   
   
+ 
 
 ################################################################
 #Main Pinchybot Class, this is where the events are called
@@ -333,11 +292,10 @@ class PinchyBot(ch.RoomManager):  #Main class
   def onLeave(self, room, user):
       ctime = curtime()
       self.safePrint("[{ts}] {user} left {room}".format(ts=ctime,user=user.name,room=room.name))
-      seen = Seen()
+      seen = seen.Seen()
       seen.search(user.name, room.name, True)
       print("Replaced/Added element")
-
- 
+      
   def onBan(self, room, user, target): #Cannot see bans unless the bot is a moderator in the occurring room.
    ctime = curtime()
    print("[{ts}] User {t} banned from {r} by {u}".format(ts=ctime,t=target.name,r=room.name,u=user.name))  
@@ -348,7 +306,7 @@ class PinchyBot(ch.RoomManager):  #Main class
    
   def onMessageDelete(self, room, user, message):
    ctime = curtime() 
-   print("[{ts}] ({r}) Message ({u}: {m}) deleted".format(ts=ctime,r=room.name,u=user.name,m=message.body)) 
+   print("[{ts}] ({r}) Message ({u}: {m}) deleted".format(ts=ctime,r=room.name,u=user.name,m=message.body))   
     
  
   def onMessage(self, room, user, message):
@@ -394,7 +352,7 @@ class PinchyBot(ch.RoomManager):  #Main class
        if rawcommand.group("args"):
         args = rawcommand.group("args")
        else:
-        args = ''
+        args = None
        print("command: {s}".format(s=cmd)) #Printing for verbosity, will be removed soon
        print("args: {s}".format(s=args))
 
@@ -408,7 +366,7 @@ class PinchyBot(ch.RoomManager):  #Main class
         room.message('Bot admin')
        else:
         room.message('A puny user :3')
-
+        
       elif cmd == 'restart':
        status = readAdmin(user.name)
        if status == True:
@@ -617,7 +575,7 @@ class PinchyBot(ch.RoomManager):  #Main class
         rand = derpi.randimg(args, nofilter)
         room.message(rand)
 
-""""
+
       elif cmd.startswith("dex."):   #Pokedex
        sw = cmd.split(".", 1)[1]
        if sw == 'name':
@@ -648,7 +606,6 @@ class PinchyBot(ch.RoomManager):  #Main class
          room.message("#494-#649")
        elif sw == 'gen6':
          room.message("#650-#718")
-""""
 
 
       elif cmd == "quoteadd": #Probably dosen't work.
@@ -887,14 +844,12 @@ class PinchyBot(ch.RoomManager):  #Main class
        if args == user.name:
         room.message("Are you looking at a mirror?")
        else:
-        seen = Seen()
-        res = seen.search(args, room.name, False)
+        s = seen.Seen()
+        res = s.search(args, room.name, False)
         if res == None:
          room.message("I have not seen {u}".format(u=args))
         else:
          room.message("I last saw {u} on {r} at {t}".format(u=res[0],r=res[2],t=res[1]))
-
-
       
        
 ################################################################
@@ -958,7 +913,7 @@ class PinchyBot(ch.RoomManager):  #Main class
 ################################################################
 #End of URL parsing
 ################################################################
-
+#Throw an exception without exiting if something happens
     except:
      print(traceback.format_exc())
 
@@ -969,6 +924,15 @@ class PinchyBot(ch.RoomManager):  #Main class
 
   def onFloodBan(self, room):   #This is why i set the bot's testing room to slow mode
     print("You are flood banned in "+room.name)
+    
+    
+  def onPMConnect(self, pm):
+   print("Connected to PM")
+
+    
+  def onPMDisconnect(self, pm): #Should automatically reconnect upon disconnect
+   print("Disconnected from PM")
+   pm._connect()
 
   def onPMMessage(self, pm, user, body):
     self.safePrint('['+curtime()+'] (PM) ' + user.name + ': ' + body) # '[HH:MM:SS](PM) username: message string'
@@ -1062,6 +1026,6 @@ if __name__ == "__main__":  #Settings in another file
   #Initial PID printing for verbosity
   print("PID: {pid}".format(pid=str(os.getpid())))
   print("PPID: {ppid}".format(ppid=str(os.getppid())))
-  Seen()
+  seen.Seen()
   PinchyBot.easy_start(conf["Rooms"], conf["Name"], conf["Pass"])
 
