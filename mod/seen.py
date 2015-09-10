@@ -1,6 +1,12 @@
 import dataset
+import time
+import datetime
 
 
+def curtime(): #Return string of current time in Y-m-D H:M:S format
+    ts = time.time()
+    st = str(datetime.datetime.fromtimestamp(ts).strftime('%Y-%m-%d %H:%M:%S'))
+    return st
 
 class Seen:
 
