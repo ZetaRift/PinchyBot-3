@@ -66,8 +66,11 @@ upt = time.time() #Grab current unix time upon execution
 
 
 def sighandle(signal, frame):
- print("Caught SIGINT, exiting")
+ s = Seen()
+ s.savefile()
+ print("Caught SIGINT, saving and exiting")
  sys.exit(0)
+
 
  
 signal.signal(signal.SIGINT, sighandle)
@@ -237,9 +240,46 @@ def gettimezone():
  
 def restart():
  py = sys.executable
+ seen = Seen()
+ seen.savefile()
  print("Restarting...")
  os.execl(py, py, * sys.argv)
 
+
+class Seen:
+
+ def savefile(self): #Use this upon exit
+  f = open("seenlist.txt", "w")
+  print("Saving 'seen' data to file...")
+  for i in seen_array:
+   f.write(str(i)+'\n')
+  f.close()
+  
+ def loadfile(self):
+  global seen_array
+  print("Loading 'seen' data file...")
+  with open("seenlist.txt", "r") as f:
+   seen_array = [line.rstrip('\n') for line in f]
+  
+ def search(self, user, room, replace): #Search for user
+  global seen_array
+  u = "U:"+user
+  for s in seen_array:
+   if u in s:
+    print("found")
+    if replace == True: #Replace specific element
+     seen_array[seen_array.index(s)] = "U:"+user+"T:"+str(time.time())+"R:"+room
+    else: #Return if replace is false
+     r = seen_array[seen_array.index(s)]
+     return r.rstrip("\n")
+   else:
+    return None
+    
+ def appendlist(self, param):
+  global seen_array
+  seen_array.append(param)
+  
+  
 
 ################################################################
 #Main Pinchybot Class, this is where the events are called
@@ -293,6 +333,15 @@ class PinchyBot(ch.RoomManager):  #Main class
   def onLeave(self, room, user):
       ctime = curtime()
       self.safePrint("[{ts}] {user} left {room}".format(ts=ctime,user=user.name,room=room.name))
+      seen = Seen()
+      chk = seen.search(user.name, room.name, False)
+      if chk == None:
+       seen.appendlist("U:{u}T:{t}R:{r}".format(u=user.name,t=str(time.time()),r=room.name))
+       print("Appended element")
+      else:
+       seen.search(user.name, room.name, True)
+       print("Replaced element")
+
  
   def onBan(self, room, user, target): #Cannot see bans unless the bot is a moderator in the occurring room.
    ctime = curtime()
@@ -838,6 +887,24 @@ class PinchyBot(ch.RoomManager):  #Main class
         room.message(ponycountdown.nextep(), True)
        elif sw == "search":
         room.message(ponycountdown.epsearch(args), True)
+        
+      elif cmd == 'seen':
+       if args in room.usernames:
+        room.message("{u} is already in this room!".format(u=args))
+       elif args == user.name:
+        room.message("Are you looking at a mirror?")
+       else:
+        seen = Seen()
+        res = seen.search(args, room.name, False)
+        if res == None:
+         room.message("I have not seen {u}".format(u=args))
+        else:
+         datapattern = "(U:(?P<user>\S+)T:(?P<time>\S+)R:(?P<room>\S+))"
+         reg = re.compile(datapattern)
+         parsed_data = reg.search(res)
+         time = tstamp(float(parsed_data.group("time")))
+         room.message("I last saw {u} on {r} at {t} UTC".format(u=args,r=parsed_data.group("room"),t=time))
+
 
       
        
