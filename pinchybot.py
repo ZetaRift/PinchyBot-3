@@ -228,8 +228,8 @@ def gettimezone():
  
 def restart():
  py = sys.executable
- seen = seen.Seen()
- seen.savefile()
+ s = seen.Seen()
+ s.savefile()
  print("Restarting...")
  os.execl(py, py, * sys.argv)
    
@@ -292,8 +292,8 @@ class PinchyBot(ch.RoomManager):  #Main class
   def onLeave(self, room, user):
       ctime = curtime()
       self.safePrint("[{ts}] {user} left {room}".format(ts=ctime,user=user.name,room=room.name))
-      seen = seen.Seen()
-      seen.search(user.name, room.name, True)
+      s = seen.Seen()
+      s.search(user.name, room.name, True)
       print("Replaced/Added element")
       
   def onBan(self, room, user, target): #Cannot see bans unless the bot is a moderator in the occurring room.
