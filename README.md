@@ -19,6 +19,8 @@ goslate (For the goslate command)
 
 PIL (or 'pillow', for fetching info on image URLs)
 
+dataset (Used for the "seen" module for database storage)
+
 # Config file
 PinchyBot uses a JSON file as a config file, look at settings-example.json for an example
 
