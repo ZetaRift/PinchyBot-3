@@ -1,8 +1,29 @@
 #Weather from wunderground (This requires an API key)
 import requests
+import dataset
 
-api_key = "" #Supply your API key here
+api_key = "" #Supply your API key here (Required)
 
+
+db = dataset.connect("sqlite:///wz-Data.db")
+dbtable = db["UserData"]
+
+def adduser(user, param):
+ t = dbtable.find_one(Username=user)
+ if t:
+  #update row
+  ID = t['id']
+  dbtable.update(dict(id=ID, Username=user, Location=param), ['id'])
+ else:
+  #place new row
+  dbtable.insert(dict(Username=user, Location=param))
+  
+  
+def rmuser(user):
+ dbtable.delete(Username=user)
+
+def savedb():
+ db.commit()
 
 def getinfo(sparam):  #Use this - faster
  sparam = sparam.replace(" ", "_")
@@ -26,8 +47,15 @@ _wind_mph = lambda w_info: w_info['current_observation']['wind_mph']
 _humid = lambda w_info: w_info['current_observation']['relative_humidity']
 
  
-def info_string(sparam):
- w_info = getinfo(sparam)
+def info_string(sparam, database_fetch, user):
+ if database_fetch == True:
+  user = dbtable.find_one(Username=user)
+  if user:
+   w_info = getinfo(user['Location'])
+  else:
+   return "User not in database"
+ else:
+  w_info = getinfo(sparam)
  if w_info is None:
   return None
  else:
@@ -43,3 +71,8 @@ def info_string(sparam):
     windkph=_wind_km(w_info),
     hum=_humid(w_info)
     )
+
+
+
+
+
