@@ -20,7 +20,16 @@ templist = ""
 
 api_key = "" #Optional API key goes here, it can be accessed on the account settings page for your account on Derpibooru
 
-def derpitimestamp(time_string): #Returns in Y-m-d H:M format, timestamp is in ISO 8601 format
+def split_taglist(tag_str):
+ length = 200
+ suffix = "..."
+ taglen = len(tag_str.split(", ", maxsplit=-1)[0:])
+ if len(tag_str) <= length:
+  return tag_str
+ else:
+  return tag_str[:length].rsplit(' ', 1)[0]+suffix+" ("+str(taglen)+" total tags)"
+ 
+def derpitimestamp(time_string): #Returns in Y-m-d H:M format
  ts_re = re.compile("(?P<year>[0-9]*-)?(?P<month>[0-9]*-)(?P<day>[0-9]*)?(T)?(?P<hour>[0-9]*:)?(?P<minute>[0-9]*:)?(?P<second>[0-9]*.)?(?P<millisecond>[0-9]*.)")
  ftime = re.match(ts_re, time_string)
  timestamp_str = "{y}-{mo}-{d} {h}:{m}".format(
@@ -115,7 +124,7 @@ _dwv = lambda img_info: int(img_info['downvotes'])
 _faves = lambda img_info: int(img_info['faves'])
 _cmts = lambda img_info: int(img_info['comment_count'])
 _uled = lambda img_info: img_info['uploader']
-_tags = lambda img_info: img_info['tags']
+_tags = lambda img_info: split_taglist(img_info['tags'])
 _chk_tags = lambda img_info: img_info['tag_ids']
 _thumb = lambda img_info: "http:"+img_info['representations']['thumb']
 _format = lambda img_info: img_info['original_format']
@@ -130,10 +139,6 @@ def stats_string(numid):
     else:
      uled_time = derpitimestamp(_created_time(img_info))
      upd_time = derpitimestamp(_updated_time(img_info))
-     if len(_chk_tags(img_info)) >= 25:
-      templist = "[Too many tags to show]"
-     else:
-      templist = _tags(img_info)
      if "explicit" in _chk_tags(img_info):
       thumb = "(<b>Explicit</b>)"
      elif "questionable" in _chk_tags(img_info):
@@ -157,6 +162,6 @@ def stats_string(numid):
         num=numid
         ),
         "<b>Image #{num} tags</b>: {tgs}".format(
-        tgs=templist,
+        tgs=_tags(img_info),
         num=numid
         ))
