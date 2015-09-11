@@ -318,12 +318,12 @@ class PinchyBot(ch.RoomManager):  #Main class
 
     rstatus = blist(user.name) #Checks if a user is whitelisted
     if rstatus == True:
-     room.setSilent(True)
-     print("User in blacklist")
-    elif quiet == 1:
-     room.setSilent(True)
+     print("User in blacklist, passing")
+     bl_pass = True
+     pass
     else:
      room.setSilent(False)
+     bl_pass = False
     ctime = curtime()
     ts = message.body
     
@@ -336,7 +336,9 @@ class PinchyBot(ch.RoomManager):  #Main class
      args = ''
 	
      if message.body:
-      if message.body[0] == "$": #Command prefix.
+      if bl_pass == True:
+       pass
+      elif message.body[0] == "$": #Command prefix.
        data = message.body[1:].split(" ", 1)
 
        if len(data) > 1: #To treat the second word to EOL as args, eg: "$eval" is the command, and "foo.bar()" is the argument parameter, if only command is issued, argument variable will be null
