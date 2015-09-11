@@ -66,6 +66,7 @@ upt = time.time() #Grab current unix time upon execution
 def sighandle(signal, frame):
  s = seen.Seen()
  s.savefile()
+ wz.savedb()
  print("Caught SIGINT, saving and exiting")
  sys.exit(0)
 
@@ -230,6 +231,7 @@ def restart():
  py = sys.executable
  s = seen.Seen()
  s.savefile()
+ wz.savedb()
  print("Restarting...")
  os.execl(py, py, * sys.argv)
    
@@ -760,22 +762,24 @@ class PinchyBot(ch.RoomManager):  #Main class
 
 
       elif cmd == "wz":
-       try:
-        jso = json.load(open("wz-data.json", "r"))
-        msg = wz.wstring(jso["users"][user.name]["zip"], jso["users"][user.name]["metric"])
+       if args == None or args.isspace():
+        msg = wz.info_string(None, True, user.name)
         room.message(msg, True)
-       except Exception as e:
-        print("nope ("+str(e)+")")
-        room.message("I don't have your weather data stored, ask the owner if you want your data stored, otherwise use !wz.zip <zip code>")
+       else:
+        msg = wz.info_string(args, False, user.name)
+        room.message(msg, True)
 
       elif cmd.startswith ("wz."):
        sw = cmd.split(".", 1)[1]
-       if sw == "zip":
-        try:
-         msg = wz.info_string(args)
-         room.message(msg, True)
-        except:
-         room.message("I need a zip code")
+       if sw == "add":
+        if args == None or args.isspace():
+         room.message("You need to provide a location")
+        else:
+         wz.adduser(user.name, args)
+         room.message("Your info has been added/updated in the database")
+       elif sw == "remove":
+        wz.rmuser(user.name)
+        room.message("Your info has been removed from the database")
 
         
 
