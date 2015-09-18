@@ -48,3 +48,5 @@ You must create settings.json for the bot to run, the required JSON elements are
 The modules are maintained as well
 
 To use the 'wz' command, an API key is required (Look at mod/wz.py)
+
+For youtube URL parsing, that requires an API key as well.
