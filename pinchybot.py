@@ -28,7 +28,6 @@ from random import randint
 import lxml.html
 from xml.dom import minidom
 import requests
-import urllib.request
 import _thread as thread
 import json
 from datetime import timedelta
