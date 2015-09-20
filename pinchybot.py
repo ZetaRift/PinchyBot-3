@@ -504,15 +504,6 @@ class PinchyBot(ch.RoomManager):  #Main class
         self.setFontSize(settings.fontsize)
         room.message("Done")
 
-
-#      elif cmd == "restart": #Creates child process along with a second connection.
-#       status = readAdmin(user.name)
-#       if status == True:
-#        room.message("Restarting..")
-#        pid = str(os.getpid())
-#        room.disconnect()
-#        os.system("./rstart.sh "+pid)
-
       elif cmd.startswith("echo."):
        sw = cmd.split(".", 1)[1]
        status = readAdmin(user.name)
@@ -572,45 +563,10 @@ class PinchyBot(ch.RoomManager):  #Main class
         nofilter = False
         
        if args is None or args.isspace():
-        rand = derpi.randimg(None, nofilter)
-        room.message(rand)
+        derpi.randimg(room, None, nofilter)
        else:
-        rand = derpi.randimg(args, nofilter)
-        room.message(rand)
-
-
-      elif cmd.startswith("dex."):   #Pokedex
-       sw = cmd.split(".", 1)[1]
-       if sw == 'name':
-        try:
-         urllib2.urlopen("http://pokemondb.net/pokedex/"+args)
-         ps = "http://pokemondb.net/pokedex/"+args
-         psp = "http://img.pokemondb.net/artwork/"+args+".jpg"
-         room.message(psp+" "+ps)
-        except:
-         room.message("Dosen't exist (Don't use caps)")
-
-       elif sw == 'img':
-        try:
-         urllib2.urlopen("http://img.pokemondb.net/artwork/"+args+".jpg")
-         psp = "http://img.pokemondb.net/artwork/"+args+".jpg"
-         room.message(psp)
-        except:
-         room.message("Dosen't exist (Don't use caps)")
-       elif sw == 'gen1':
-         room.message("#001-#151")
-       elif sw == 'gen2':
-         room.message("#152-#251")
-       elif sw == 'gen3':
-         room.message("#252-#386")
-       elif sw == 'gen4':
-         room.message("#387-#493")
-       elif sw == 'gen5':
-         room.message("#494-#649")
-       elif sw == 'gen6':
-         room.message("#650-#718")
-
-
+        derpi.randimg(room, args, nofilter)
+        
       elif cmd == "quoteadd": #Probably dosen't work.
        status = readAdmin(user.name)
        if status == True:
@@ -729,24 +685,6 @@ class PinchyBot(ch.RoomManager):  #Main class
         except:
          room.message("You did it wrong")
 
-
-
-      elif cmd.startswith("help."):
-       sw = cmd.split(".", 1)[1]
-       hcmd = ['main', 'derpi', 'dex']
-       if sw not in hcmd:
-        room.message("Syntax: !help.directive (Available directives are: main, derpi, dex)")
-       elif sw == 'main':
-        room.message("General commands: !hug, !bestpony, !diabetes, !ping, !8ball, !dice, !google, !flipcoin, !lusers, !otp, !shiny")
-       elif sw == 'derpi':
-        room.message("The !derpi.* command is a function to print stats of an image from derpibooru. (See !derpi.info for available commands)")
-        room.message("URLs matching http://derpiboo.ru/ or http://derpibooru.org/ with the image page will automatically be parsed.")
-       elif sw == 'dex':
-        room.message("National Pokedex. This function links an image of the pokemon, plus the link to its info. The available commands are !dex.name <name of pokemon> (Exclude the brackets and do not use caps), !dex.img <name> (This goes for alternate forms such as Shaymin's Sky forme (shaymin-sky)", True)
-
-
-
-
       elif cmd == "tag":
        null = ['null']
        s1 = str(args.replace(" ", "+"))
@@ -781,6 +719,7 @@ class PinchyBot(ch.RoomManager):  #Main class
        elif sw == "remove":
         wz.rmuser(user.name)
         room.message("Your info has been removed from the database")
+
 
         
 
@@ -854,7 +793,7 @@ class PinchyBot(ch.RoomManager):  #Main class
         if res == None:
          room.message("I have not seen {u}".format(u=args))
         else:
-         room.message("I last saw {u} on {r} at {t}".format(u=res[0],r=res[2],t=res[1]))
+         room.message("I last saw {u} on {r} at {t} {tz}".format(u=res[0],r=res[2],t=res[1], tz=gettimezone()))
       
        
 ################################################################
@@ -885,12 +824,7 @@ class PinchyBot(ch.RoomManager):  #Main class
         derpipattern = "(https?://(www.)?((derpibooru[.]org)|(derpiboo[.]ru))(/images/)?/?(?P<id>[0-9]*))"
         reg = re.compile(derpipattern)
         num = reg.search(url.group(0))
-        msg = derpi.stats_string(num.group("id"))
-        if msg is None:
-         room.message("Dosen't exist?")
-        else:
-         room.message(msg[0], True)
-         room.message(msg[1], True)
+        derpi.stats_string(room, num.group("id"))
 
        elif re.match("(https?://(www.)?((youtube[.]com)|(youtu[.]be))\S+)", url.group(0)): #Youtube URLs
         ytpattern = "(https://(www[.])?(?P<domain>(youtube[.]com)|(youtu[.]be))\S+)"
