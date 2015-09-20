@@ -41,7 +41,7 @@ def derpitimestamp(time_string): #Returns in Y-m-d H:M format
   )
  return timestamp_str
 
-def randimg(t, nofilter):
+def randimg(room, t, nofilter):
     if nofilter == True:
      if t is None:
       r = requests.get("http://derpibooru.org/search.json?key={key}&q=cute".format(key=api_key))
@@ -64,14 +64,14 @@ def randimg(t, nofilter):
     else:
      jso = r.json()
      if jso['total'] == 0:
-      return("That tag or tag combination does not exist")
+      room.message("That tag or tag combination does not exist")
      else:
       dat = random.choice(jso['search'])
       iid = dat['id_number']
-      return str("http://derpibooru.org/{id} (Tag/Tag combination has {n} images)".format(id=iid,n=str(jso['total'])))
+      room.message("http://derpibooru.org/{id} (Tag/Tag combination has {n} images)".format(id=iid,n=str(jso['total'])))
     
 
-def tagsearch(tag):        #Dosen't work because it says "list indices must be integers, not str" on eval
+def tagsearch(tag):
     ser1 = tag.replace(" ", "+")
     ser1 = ser1.replace(", ", ",")
     r = requests.get("http://derpibooru.org/search.json?q={t}".format(t=ser1))
@@ -132,10 +132,10 @@ _created_time = lambda img_info: img_info['created_at']
 _updated_time = lambda img_info: img_info['updated_at']
 
 
-def stats_string(numid):
+def stats_string(room, numid):
     img_info = fetch_info(numid)
     if img_info is None: #Return none if fetch_info sees a non-200 HTTP status code
-     return None
+     room.message("Image dosen't exist?")
     else:
      uled_time = derpitimestamp(_created_time(img_info))
      upd_time = derpitimestamp(_updated_time(img_info))
@@ -150,7 +150,7 @@ def stats_string(numid):
      else:
       thumb = _thumb(img_info)
       
-     return ("{thumb} http://derpibooru.org/{num} | <b>Uploaded at</b>: {uledtime} UTC by {uled} | <b>Score</b>: {score} ({upv} up / {dwv} down) with {faves} faves | <b>Comment count</b>: {cmts} ".format(
+     room.message("{thumb} http://derpibooru.org/{num} | <b>Uploaded at</b>: {uledtime} UTC by {uled} | <b>Score</b>: {score} ({upv} up / {dwv} down) with {faves} faves | <b>Comment count</b>: {cmts} ".format(
         thumb=thumb,
         uledtime=uled_time,
         score=_score(img_info),
@@ -160,8 +160,8 @@ def stats_string(numid):
         cmts=_cmts(img_info),
         uled=_uled(img_info),
         num=numid
-        ),
-        "<b>Image #{num} tags</b>: {tgs}".format(
-        tgs=_tags(img_info),
-        num=numid
-        ))
+        ), True)
+     room.message("Image #{n} tags: {tlist}".format(
+     n=numid,
+     tlist=_tags(img_info)
+     ))
