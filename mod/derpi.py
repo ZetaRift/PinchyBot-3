@@ -41,7 +41,10 @@ def derpitimestamp(time_string): #Returns in Y-m-d H:M format
   )
  return timestamp_str
 
-def randimg(room, t, nofilter):
+def randimg(t, nofilter):
+    #Param room: 'Room' object from ch.py
+    #Param t: Search term string
+    #Param nofilter: Boolean to ignore default filter.
     if nofilter == True:
      if t is None:
       r = requests.get("http://derpibooru.org/search.json?key={key}&q=cute".format(key=api_key))
@@ -68,7 +71,7 @@ def randimg(room, t, nofilter):
      else:
       dat = random.choice(jso['search'])
       iid = dat['id_number']
-      room.message("http://derpibooru.org/{id} (Tag/Tag combination has {n} images)".format(id=iid,n=str(jso['total'])))
+      return "http://derpibooru.org/{id} (Tag/Tag combination has {n} images)".format(id=iid,n=str(jso['total']))
     
 
 def tagsearch(tag):
@@ -132,7 +135,9 @@ _created_time = lambda img_info: img_info['created_at']
 _updated_time = lambda img_info: img_info['updated_at']
 
 
-def stats_string(room, numid):
+def stats_string(numid):
+    #Param room: 'Room' object from ch.py
+    #Param numid: numid string for image number
     img_info = fetch_info(numid)
     if img_info is None: #Return none if fetch_info sees a non-200 HTTP status code
      room.message("Image dosen't exist?")
@@ -150,7 +155,7 @@ def stats_string(room, numid):
      else:
       thumb = _thumb(img_info)
       
-     room.message("{thumb} http://derpibooru.org/{num} | <b>Uploaded at</b>: {uledtime} UTC by {uled} | <b>Score</b>: {score} ({upv} up / {dwv} down) with {faves} faves | <b>Comment count</b>: {cmts} ".format(
+     return ("{thumb} http://derpibooru.org/{num} | <b>Uploaded at</b>: {uledtime} UTC by {uled} | <b>Score</b>: {score} ({upv} up / {dwv} down) with {faves} faves | <b>Comment count</b>: {cmts} ".format(
         thumb=thumb,
         uledtime=uled_time,
         score=_score(img_info),
@@ -160,8 +165,8 @@ def stats_string(room, numid):
         cmts=_cmts(img_info),
         uled=_uled(img_info),
         num=numid
-        ), True)
-     room.message("Image #{n} tags: {tlist}".format(
+        ),
+     "Image #{n} tags: {tlist}".format(
      n=numid,
      tlist=_tags(img_info)
      ))
