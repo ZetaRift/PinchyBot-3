@@ -824,7 +824,9 @@ class PinchyBot(ch.RoomManager):  #Main class
         derpipattern = "(https?://(www.)?((derpibooru[.]org)|(derpiboo[.]ru))(/images/)?/?(?P<id>[0-9]*))"
         reg = re.compile(derpipattern)
         num = reg.search(url.group(0))
-        derpi.stats_string(room, num.group("id"))
+        statstr = derpi.stats_string(num.group("id"))
+        room.message(statstr[0], True)
+        room.message(statstr[1], True)
 
        elif re.match("(https?://(www.)?((youtube[.]com)|(youtu[.]be))\S+)", url.group(0)): #Youtube URLs
         ytpattern = "(https://(www[.])?(?P<domain>(youtube[.]com)|(youtu[.]be))\S+)"
@@ -915,9 +917,9 @@ class PinchyBot(ch.RoomManager):  #Main class
 
       elif cmd == "pony":
        if args is None or args.isspace():
-        rand = derpi.randimg(None)
+        rand = derpi.randimg(None, False)
        else:
-        rand = derpi.randimg(args)
+        rand = derpi.randimg(args, False)
        pm.message(user, rand)
 
       elif cmd == "howbig":
@@ -956,9 +958,7 @@ class PinchyBot(ch.RoomManager):  #Main class
          pm.message(user, "Permission denied")
 
       elif cmd == "version":
-       pm.message(user, "PinchyBot {ver} on Python {pyver}".format(ver=version_string,pyver=".".join(map(str, sys.version_info[:3]))))
-       
-       
+       pm.message(user, "PinchyBot {ver} on Python {pyver}".format(ver=version_string,pyver=".".join(map(str, sys.version_info[:3]))))      
 
 
 if __name__ == "__main__":  #Settings in another file
