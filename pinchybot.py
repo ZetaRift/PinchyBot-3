@@ -563,9 +563,9 @@ class PinchyBot(ch.RoomManager):  #Main class
         nofilter = False
         
        if args is None or args.isspace():
-        derpi.randimg(room, None, nofilter)
+        derpi.randimg(None, nofilter)
        else:
-        derpi.randimg(room, args, nofilter)
+        derpi.randimg(args, nofilter)
         
       elif cmd == "quoteadd": #Probably dosen't work.
        status = readAdmin(user.name)
