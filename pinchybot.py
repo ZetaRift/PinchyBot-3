@@ -704,10 +704,10 @@ class PinchyBot(ch.RoomManager):  #Main class
 
       elif cmd == "wz":
        if args == None or args.isspace():
-        msg = wz.info_string(None, True, user.name)
+        msg = wz.info_string(None, True, user.name, conf["WZ-APIKey"])
         room.message(msg, True)
        else:
-        msg = wz.info_string(args, False, user.name)
+        msg = wz.info_string(args, False, user.name, conf["WZ-APIKey"])
         room.message(msg, True)
 
       elif cmd.startswith ("wz."):
@@ -836,12 +836,12 @@ class PinchyBot(ch.RoomManager):  #Main class
         yt_url = reg.search(url.group(0))
         if yt_url.group("domain") == "youtube.com":
          id = yt_url.group(0).split("/watch?v=", 1)[1]
-         msg = yt.stats_string(id)
+         msg = yt.stats_string(id, conf["YT-APIKey"])
          room.message(msg, True)
          #function here
         elif yt_url.group("domain") == "youtu.be":
          id = yt_url.group(0).split(".be/", 1)[1]
-         msg = yt.stats_string(id)
+         msg = yt.stats_string(id, conf["YT-APIKey"])
          room.message(msg, True)
        elif url.group(0).startswith ("https://img.pokemondb.net/artwork/"):
         ignoreurl()
