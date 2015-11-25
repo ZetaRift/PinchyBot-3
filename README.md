@@ -44,6 +44,10 @@ You must create settings.json for the bot to run, the required JSON elements are
 
 "Greet" Bool: For the bot to greet a joining user, true will greet users, false will omit greets
 
+"WZ-APIKey" String: Required by the wz module.
+
+"YT-APIKey" String: Required by the yt module.
+
 Optional JSON elements:
 
 "CommandPrefix" String: This should be a single character prefix for the bot's commands. If the element is not present, the bot will use its default prefix
