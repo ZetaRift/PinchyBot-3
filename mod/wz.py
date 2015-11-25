@@ -2,11 +2,13 @@
 import requests
 import dataset
 
-api_key = "" #Supply your API key here (Required)
 
 
-db = dataset.connect("sqlite:///wz-Data.db")
+db = dataset.connect("sqlite:///wz-Data.db") #Note that this will create the database file at the root directory of the bot (Where pinchybot.py is)
 dbtable = db["UserData"]
+
+def readvar():
+ return conf["TestKey"]
 
 def adduser(user, param):
  t = dbtable.find_one(Username=user)
@@ -25,7 +27,7 @@ def rmuser(user):
 def savedb():
  db.commit()
 
-def getinfo(sparam):  #Use this - faster
+def getinfo(sparam, api_key):  #Use this - faster
  sparam = sparam.replace(" ", "_")
  sparam = sparam.replace(", ", ",")
  r = requests.get('http://api.wunderground.com/api/'+api_key+'/conditions/q/'+sparam+'.json')
@@ -47,15 +49,15 @@ _wind_mph = lambda w_info: w_info['current_observation']['wind_mph']
 _humid = lambda w_info: w_info['current_observation']['relative_humidity']
 
  
-def info_string(sparam, database_fetch, user):
+def info_string(sparam, database_fetch, user, api_key):
  if database_fetch == True:
   user = dbtable.find_one(Username=user)
   if user:
-   w_info = getinfo(user['Location'])
+   w_info = getinfo(user['Location'], api_key)
   else:
    return "User not in database"
  else:
-  w_info = getinfo(sparam)
+  w_info = getinfo(sparam, api_key)
  if w_info is None:
   return None
  else:
