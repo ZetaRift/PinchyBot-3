@@ -337,7 +337,7 @@ class PinchyBot(ch.RoomManager):  #Main class
      if message.body:
       if bl_pass == True:
        pass
-      elif message.body[0] == "$": #Command prefix.
+      elif message.body[0] == cmdprefix: #Command prefix.
        data = message.body[1:].split(" ", 1)
 
        if len(data) > 1: #To treat the second word to EOL as args, eg: "$eval" is the command, and "foo.bar()" is the argument parameter, if only command is issued, argument variable will be null
@@ -967,6 +967,11 @@ if __name__ == "__main__":  #Settings in another file
   #Initial PID printing for verbosity
   print("PID: {pid}".format(pid=str(os.getpid())))
   print("PPID: {ppid}".format(ppid=str(os.getppid())))
+  try:
+   cmdprefix = conf["CommandPrefix"]
+  except KeyError:
+   print("CommandPrefix not defined in config file, going with default prefix")
+   cmdprefix = "$"
   seen.Seen()
   PinchyBot.easy_start(conf["Rooms"], conf["Name"], conf["Pass"])
 
