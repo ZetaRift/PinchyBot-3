@@ -347,8 +347,8 @@ class PinchyBot(ch.RoomManager):  #Main class
        else:
 
         cmd, args = data[0], None
-      elif re.match("((?i)pinchybot, (?P<cmd>(\S+)) *(?P<args>(.*)))", message.body): #Another type of issuing a command to the bot
-       commandpattern = "((?i)pinchybot, (?P<cmd>(\S+)) *(?P<args>(.*)))"
+      elif re.match("((?i)"+conf['Name'].lower()+", (?P<cmd>(\S+)) *(?P<args>(.*)))", message.body): #Another type of issuing a command to the bot
+       commandpattern = "((?i)"+conf['Name'].lower()+", (?P<cmd>(\S+)) *(?P<args>(.*)))"
        command_reg = re.compile(commandpattern)
        rawcommand = command_reg.search(message.body)
        cmd = rawcommand.group("cmd")
