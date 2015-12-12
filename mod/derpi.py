@@ -144,11 +144,11 @@ def stats_string(numid):
     else:
      uled_time = derpitimestamp(_created_time(img_info))
      upd_time = derpitimestamp(_updated_time(img_info))
-     if "explicit" in _chk_tags(img_info):
+     if _tags(img_info).find("explicit") != -1:
       thumb = "(<b>Explicit</b>)"
-     elif "questionable" in _chk_tags(img_info):
+     elif _tags(img_info).find("questionable") != -1:
       thumb = "(<b>Questionable</b>)"
-     elif "grimdark" in _chk_tags(img_info):
+     elif _tags(img_info).find("grimdark") != -1:
       thumb = "(<b>Grimdark</b>)"
      elif  _format(img_info) == "gif":
       thumb = ''
