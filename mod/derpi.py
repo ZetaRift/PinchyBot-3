@@ -128,7 +128,6 @@ _faves = lambda img_info: int(img_info['faves'])
 _cmts = lambda img_info: int(img_info['comment_count'])
 _uled = lambda img_info: img_info['uploader']
 _tags = lambda img_info: split_taglist(img_info['tags'])
-_chk_tags = lambda img_info: img_info['tag_ids']
 _thumb = lambda img_info: "http:"+img_info['representations']['thumb']
 _format = lambda img_info: img_info['original_format']
 _created_time = lambda img_info: img_info['created_at']
