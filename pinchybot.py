@@ -77,16 +77,19 @@ def urlparse(url):    #URL parsing for title. Needs lxml
      f = requests.get(url, stream=True)
      content_type = f.headers['Content-Type']
      if f.status_code != 200:
-      return str(f.status_code)
+      return "Err: "+str(f.status_code)
      else:
       if re.match("(image\S+?(?P<format>(jpeg)|(png)|(gif)))", content_type):
        print("Image URL")
        imgpattern = "(image\S+?(?P<format>(jpeg)|(png)|(gif)))"
-       reg = re.compile(imgpattern)
-       imgformat = reg.search(content_type)
-       s = Image.open(f.raw)
-       msg = "{f} image, {size}, {w} x {h}".format(f=imgformat.group("format").upper(),size=readablesize(int(f.headers["content-length"])),w=s.size[0],h=s.size[1])
-       return msg
+       if int(f.headers["content-length"]) > 4194304: #Ignore if bigger than 4 MiB
+        pass
+       else:
+        reg = re.compile(imgpattern)
+        imgformat = reg.search(content_type)
+        s = Image.open(f.raw)
+        msg = "{f} image, {size}, {w} x {h}".format(f=imgformat.group("format").upper(),size=readablesize(int(f.headers["content-length"])),w=s.size[0],h=s.size[1])
+        return msg
       else:
        s = lxml.html.fromstring(f.content) #lxml wants a consistently undecoded file, so f.content does it
        title = '[ '+s.find(".//title").text+" ]"
