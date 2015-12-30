@@ -74,23 +74,25 @@ signal.signal(signal.SIGINT, sighandle)
 
 
 def urlparse(url):    #URL parsing for title. Needs lxml
-     f = requests.get(url, stream=True)
-     content_type = f.headers['Content-Type']
-     if f.status_code != 200:
-      return "Err: "+str(f.status_code)
+     h = requests.head(url) #Send a HEAD request first for meta-info such as content type and content length without requesting the entire content
+     content_type = h.headers['Content-Type']
+     if h.status_code != 200:
+      return "Err: "+str(h.status_code)
      else:
       if re.match("(image\S+?(?P<format>(jpeg)|(png)|(gif)))", content_type):
        print("Image URL")
        imgpattern = "(image\S+?(?P<format>(jpeg)|(png)|(gif)))"
-       if int(f.headers["content-length"]) > 4194304: #Ignore if bigger than 4 MiB
+       if int(h.headers["content-length"]) > 4194304: #Ignore if bigger than 4 MiB
         pass
        else:
         reg = re.compile(imgpattern)
         imgformat = reg.search(content_type)
+        f = requests.get(url, stream=True)
         s = Image.open(f.raw)
         msg = "{f} image, {size}, {w} x {h}".format(f=imgformat.group("format").upper(),size=readablesize(int(f.headers["content-length"])),w=s.size[0],h=s.size[1])
         return msg
       else:
+       f = requests.get(url)
        s = lxml.html.fromstring(f.content) #lxml wants a consistently undecoded file, so f.content does it
        title = '[ '+s.find(".//title").text+" ]"
        return title
