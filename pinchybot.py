@@ -238,6 +238,19 @@ def restart():
  wz.savedb()
  print("Restarting...")
  os.execl(py, py, * sys.argv)
+ 
+ 
+def ttimer(room, dur, user):
+         count = 0
+         if dur > 172800:
+          room.message("Too high")
+         elif dur < 0:
+          room.message("Not a positive number")
+         else:
+          while count != dur:
+           time.sleep(1)
+           count += 1
+          room.message("Timeup for {u}".format(u=user))
    
    
   
@@ -624,72 +637,12 @@ class PinchyBot(ch.RoomManager):  #Main class
        link = "http://fp.chatango.com/profileimg/%s/%s/%s/full.jpg" % (args[0], args[1], args)
        room.message(link)
 
-      elif cmd.startswith("timer."):
-       sw = cmd.split(".", 1)[1]
-       if sw == 's':
-        def ttimer( dur, u):
-         count = 0
-         while True:
-          time.sleep(1)
-          count += 1
-          if count == dur:
-           print("Timeup")
-           room.message("Timeup for {u}".format(u=user.name))
-           break
+      elif cmd.startswith("timer"):
         try:
-         if int(args) <= 0:
-          room.message("Number needs to be higher than 0")
-         elif int(args) > 172800:
-          room.message("Upper limit is 172800")
-         else:
-          thread.start_new_thread(ttimer, (int(args), user.name ) )
-          room.message("Timer started for %s seconds for %s" % (args, user.name))
-          
+         timetuple = (room, int(args), user.name)
+         thread.start_new_thread(ttimer, (timetuple) )
         except:
-         room.message("You did it wrong")
-
-       elif sw == 'm':
-        def ttimer( dur, u):
-         count = 0
-         while True:
-          time.sleep(60)
-          count += 1
-          if count == dur:
-           print("Timeup")
-           room.message("Timeup for %s!" % (u))
-           break
-        try:
-         if int(args) <= 0:
-          room.message("Number needs to be higher than 0")
-         elif int(args) > 2880:
-          room.message("Upper limit is 2880")
-         else:
-          thread.start_new_thread(ttimer, (int(args), user.name ) )
-          room.message("Timer started for %s minutes for %s" % (args, user.name))
-          
-        except:
-         room.message("You did it wrong")
-
-       elif sw == 'h':
-        def ttimer( dur, u):
-         count = 0
-         while True:
-          time.sleep(3600)
-          count += 1
-          if count == dur:
-           print("Timeup")
-           room.message("Timeup for %s!" % (u))
-           break
-        try:
-         if int(args) <= 0:
-          room.message("Number needs to be higher than 0")
-         elif int(args) > 48:
-          room.message("Upper limit is 48")
-         else:
-          thread.start_new_thread(ttimer, (int(args), user.name ) )
-          room.message("Timer started for %s hours for %s" % (args, user.name))
-          
-        except:
+         print(traceback.format_exc())
          room.message("You did it wrong")
 
       elif cmd == "tag":
