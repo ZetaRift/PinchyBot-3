@@ -377,29 +377,25 @@ class PinchyBot(ch.RoomManager):  #Main class
 ################################################################
 
       if cmd == 'whoami':
-       status = readAdmin(user.name)
-       if status == True:
+       if user.name in conf["Admins"]:
         room.message('Bot admin')
        else:
         room.message('A puny user :3')
         
       elif cmd == 'restart':
-       status = readAdmin(user.name)
-       if status == True:
+       if user.name in conf["Admins"]:
         restart()
 
       elif cmd == 'join':
-       status = readAdmin(user.name)
-       if status == True:
+       if user.name in conf["Admins"]:
         self.joinRoom(args)
 
       elif cmd == 'part':
-       status = readAdmin(user.name)
-       if status == True:
+       if user.name in conf["Admins"]:
         self.leaveRoom(args)
 
       elif cmd == "eval":
-       if readAdmin(user.name) == True:
+       if user.name in conf["Admins"]:
         try:
          room.message(eval(args))
         except Exception as err:
@@ -411,20 +407,18 @@ class PinchyBot(ch.RoomManager):  #Main class
        if echo == 0:
         room.message(args)
        elif echo == 1:
-        if readAdmin(user.name) == True :
+        if user.name in conf["Admins"]:
          room.message(args)
        elif echo == 2:
          print("!say is disabled.")
 
       elif cmd == 'quiet':		#Command that the bot wont respond to any users issuing a command
-       status = readAdmin(user.name)
-       if status == True:
+       if user.name in conf["Admins"]:
         room.setSilent(True)
         quiet = 1
 
       elif cmd == 'enable':
-       status = readAdmin(user.name)
-       if status == True:
+       if user.name in conf["Admins"]:
         room.setSilent(False)
         quiet = 0
 
@@ -502,16 +496,14 @@ class PinchyBot(ch.RoomManager):  #Main class
         print(traceback.format_exc())
 
       elif cmd == "fontcolor":
-       status = readAdmin(user.name)
-       if status == True:
+       if user.name in conf["Admins"]:
         try:
          self.setFontColor(args)
         except:
          room.message("Wrong")
 
       elif cmd == "setfont":
-       status = readAdmin(user.name)
-       if status == True:
+       if user.name in conf["Admins"]:
         self.setFontColor(settings.fontcolor)
         self.setNameColor(settings.namecolor)
         self.setFontSize(settings.fontsize)
@@ -519,8 +511,7 @@ class PinchyBot(ch.RoomManager):  #Main class
 
       elif cmd.startswith("echo."):
        sw = cmd.split(".", 1)[1]
-       status = readAdmin(user.name)
-       if status == True:
+       if user.name in conf["Admins"]:
         if sw == "on":
          echo = 0
          room.message("!say command is now usable by all users")
@@ -549,16 +540,14 @@ class PinchyBot(ch.RoomManager):  #Main class
           room.message("Spoiler image for tag <b>{arg}</b>: {spoilerurl}".format(arg=args,spoilerurl=tagct), True)
 
       elif cmd == "fontsize":
-       status = readAdmin(user.name)
-       if status == True:
+       if user.name in conf["Admins"]:
         try:
          self.setFontSize(args)
         except:
          room.message("Wrong")
 
       elif cmd == "namecolor":
-       status = readAdmin(user.name)
-       if status == True:
+       if user.name in conf["Admins"]:
         try:
          self.setNameColor(args)
         except:
@@ -583,15 +572,13 @@ class PinchyBot(ch.RoomManager):  #Main class
         room.message(searchstring, True)
         
       elif cmd == "quoteadd": #Probably dosen't work.
-       status = readAdmin(user.name)
-       if status == True:
+       if user.name in conf["Admins"]:
         with open('quotes.txt', 'a') as qfile:
          qfile.write(args)
          room.message("Added quote ("+args+") to file.")
 
       elif cmd == "greetmsg":  #so many if/else statements
-       status = readAdmin(user.name)
-       if status == True:
+       if user.name in conf["Admins"]:e:
         global greetmsg
 
         if args == "off":
@@ -678,12 +665,12 @@ class PinchyBot(ch.RoomManager):  #Main class
 
         
 
-      elif cmd == 'metric':
-       met = UserMetric(user.name)
-       if met == 1:
-        room.message("Your setting is currently set to Metric. Ask the bot owner if you want to change this setting.")
-       else:
-        room.message("Your setting is currently set to Imperial(Default setting), ask the bot owner if you want to change this setting.")
+#      elif cmd == 'metric':
+#       met = UserMetric(user.name)
+#       if met == 1:
+#        room.message("Your setting is currently set to Metric. Ask the bot owner if you want to change this setting.")
+#       else:
+#        room.message("Your setting is currently set to Imperial(Default setting), ask the bot owner if you want to change this setting.")
 
       elif cmd == "gimg":
        if room.name in conf['ExplicitRooms']:
@@ -721,15 +708,13 @@ class PinchyBot(ch.RoomManager):  #Main class
         print(traceback.format_exc())
         
       elif cmd == 'bt':
-       status = readAdmin(user.name)
-       if status == True:
+       if user.name in conf["Admins"]:
         with open("blacklist.txt", "a") as f:
          f.write(" {arg}".format(arg=args))
          room.message("Added user <u>{user}</u> to blacklist".format(user=args), True)
          
       elif cmd == 'systime':
-       status = readAdmin(user.name)
-       if status == True:
+       if user.name in conf["Admins"]:
         room.message(curtime())
         
       elif cmd.startswith("ponycd."):
@@ -767,6 +752,9 @@ class PinchyBot(ch.RoomManager):  #Main class
        room.message("Wat.")
       else:
        print("No.")
+       
+     elif message.body.startswith("ayy"):
+      room.message("lmao")
 ################################################################
 #Start of URL parsing
 ################################################################
@@ -855,16 +843,14 @@ class PinchyBot(ch.RoomManager):  #Main class
        pm.message(user, "I am a chatango bot coded in python, i was created by chaoticrift/crimsontail0 ( http://chaoticrift.chatango.com/ or http://crimsontail0.chatango.com/ ). The command list is here: http://pastebin.com/H3ktv6VT")
 
       elif cmd == "join":
-       status = readAdmin(user.name)
-       if status == True:
+       if user.name in conf["Admins"]:
         self.joinRoom(args)
         pm.message(user, "Joined "+args)
        else:
         pm.message(user, "Permission denied")
 
       elif cmd == "part":
-       status = readAdmin(user.name)
-       if status == True:
+       if user.name in conf["Admins"]:
         self.leaveRoom(args)
         pm.message(user, "Left "+args)
        else:
@@ -902,8 +888,7 @@ class PinchyBot(ch.RoomManager):  #Main class
        pm.message(user, rev)
 
       elif cmd == "eval":
-       status = readAdmin(user.name)
-       if status == True:
+       if user.name in conf["Admins"]:
         try:
          logging.info("[" + curtime() + "] eval command used by " + user.name + ", trying to eval " + args)
          pm.message(user, eval(args))
@@ -913,9 +898,7 @@ class PinchyBot(ch.RoomManager):  #Main class
          pm.message(user, "Permission denied")
 
       elif cmd == "version":
-       pm.message(user, "PinchyBot {ver} on Python {pyver}".format(ver=version_string,pyver=".".join(map(str, sys.version_info[:3]))))      
-
-
+       pm.message(user, "PinchyBot {ver} on Python {pyver}".format(ver=version_string,pyver=".".join(map(str, sys.version_info[:3]))))
 if __name__ == "__main__":  #Settings in another file
   #Initial PID printing for verbosity
   print("PID: {pid}".format(pid=str(os.getpid())))
