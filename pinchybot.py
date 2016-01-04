@@ -112,13 +112,6 @@ def slate(tran, lang): #I think they changed the translation API?
     tr = gs.translate(tran, lang)
     return tr
 
-
-def readAdmin(user): #Boolean values are better in this case, and on similar defs
- if user in conf["Admins"]:
-  return True
- else:
-  return False
-
 def roll(sides, count):
     r = [random.randrange(1, sides) for i in range(count)]
     dice_array = r
