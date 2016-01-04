@@ -571,7 +571,7 @@ class PinchyBot(ch.RoomManager):  #Main class
          room.message("Added quote ("+args+") to file.")
 
       elif cmd == "greetmsg":  #so many if/else statements
-       if user.name in conf["Admins"]:e:
+       if user.name in conf["Admins"]:
         global greetmsg
 
         if args == "off":
