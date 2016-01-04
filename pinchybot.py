@@ -270,7 +270,7 @@ class PinchyBot(ch.RoomManager):  #Main class
 
   def onConnect(self, room):
     
-    print("Connected to "+room.name)
+    print("["+curtime()+"] Connected to "+room.name)
     self.setFontColor(conf["FontColor"])
     self.setNameColor(conf["NameColor"])
     self.setFontSize(conf["FontSize"])
@@ -288,8 +288,7 @@ class PinchyBot(ch.RoomManager):  #Main class
  
 
   def onDisconnect(self, room):   #Wouldn't reconnect to the room unless you restart the script
-    ctime = curtime()
-    print("[" + ctime + "] Parted "+room.name+" (Disconnect)")
+    print("[" + curtime() + "] Parted "+room.name+" (Disconnect)")
     
     self.joinRoom(room.name)
 
@@ -300,8 +299,10 @@ class PinchyBot(ch.RoomManager):  #Main class
 
 
   def onJoin(self, room, user):
-      ctime = curtime()
-      self.safePrint("[{ts}] {user} joined {room}".format(ts=ctime,user=user.name,room=room.name))
+      s = seen.Seen()
+      s.search(user.name, room.name, True)
+      print("Replaced/Added element")
+      self.safePrint("[{ts}] {user} joined {room}".format(ts=curtime(),user=user.name,room=room.name))
       if conf['Greet'] == True:
        room.setSilent(False)
        room.message("{user} has joined, hi!".format(user=user.name))
@@ -309,42 +310,36 @@ class PinchyBot(ch.RoomManager):  #Main class
        print("Greet omitted")
 
   def onLeave(self, room, user):
-      ctime = curtime()
-      self.safePrint("[{ts}] {user} left {room}".format(ts=ctime,user=user.name,room=room.name))
+      self.safePrint("[{ts}] {user} left {room}".format(ts=curtime(),user=user.name,room=room.name))
       s = seen.Seen()
       s.search(user.name, room.name, True)
       print("Replaced/Added element")
       
   def onBan(self, room, user, target): #Cannot see bans unless the bot is a moderator in the occurring room.
-   ctime = curtime()
-   print("[{ts}] User {t} banned from {r} by {u}".format(ts=ctime,t=target.name,r=room.name,u=user.name))  
+   print("[{ts}] User {t} banned from {r} by {u}".format(ts=curtime(),t=target.name,r=room.name,u=user.name))  
    
   def onUnban(self, room, user, target):
-   ctime = curtime()
-   print("[{ts}] User {t} unbanned from {r} by {u}".format(ts=ctime,t=target.name,r=room.name,u=user.name))
+   print("[{ts}] User {t} unbanned from {r} by {u}".format(ts=curtime(),t=target.name,r=room.name,u=user.name))
    
   def onMessageDelete(self, room, user, message):
-   ctime = curtime() 
-   print("[{ts}] ({r}) Message ({u}: {m}) deleted".format(ts=ctime,r=room.name,u=user.name,m=message.body))   
+   print("[{ts}] ({r}) Message ({u}: {m}) deleted".format(ts=curtime(),r=room.name,u=user.name,m=message.body))   
     
  
   def onMessage(self, room, user, message):
     global echo
     global quiet
+    bl_pass = False
      
 
     rstatus = blist(user.name) #Checks if a user is whitelisted
     if rstatus == True:
      print("User in blacklist, passing")
      bl_pass = True
-     pass
     else:
-     room.setSilent(False)
      bl_pass = False
-    ctime = curtime()
     ts = message.body
     
-    self.safePrint("[" + ctime + "] (" + room.name + ") "+user.name + ': ' + message.body)
+    self.safePrint("[" + curtime() + "] (" + room.name + ") "+user.name + ': ' + message.body)
     try: #Try statement over the bot's commands, unicode works however, but can crash after sending special characters such as Russian letters.
      urlpattern = "(https?://\S+)"
      regex = re.compile(urlpattern)
