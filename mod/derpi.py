@@ -41,17 +41,17 @@ def derpitimestamp(time_string): #Returns in Y-m-d H:M format
   )
  return timestamp_str
 
-def randimg(t, nofilter):
+def randimg(t, apikey):
     #Param room: 'Room' object from ch.py
     #Param t: Search term string
     #Param nofilter: Boolean to ignore default filter.
-    if nofilter == True:
+    if apikey != None:
      if t is None:
-      r = requests.get("http://derpibooru.org/search.json?key={key}&q=cute".format(key=api_key))
+      r = requests.get("http://derpibooru.org/search.json?key={key}&q=cute".format(key=apikey))
      else:
       t = t.replace(" ", "+")
       t = t.replace(", ", ",")
-      r = requests.get("http://derpibooru.org/search.json?key={key}&q={t}".format(t=t,key=api_key))
+      r = requests.get("http://derpibooru.org/search.json?key={key}&q={t}".format(t=t,key=apikey))
 
     else:
      if t is None:
@@ -72,7 +72,7 @@ def randimg(t, nofilter):
       dat = random.choice(jso['search'])
       iid = dat['id_number']
       return "http://derpibooru.org/{id} (Tag/Tag combination has {n} images)".format(id=iid,n=str(jso['total']))
-    
+  
 
 def tagsearch(tag):
     ser1 = tag.replace(" ", "+")
