@@ -18,8 +18,6 @@ Changes are being applied to the derpibooru API
 logging.basicConfig(filename='logs/derpi.log',level=logging.WARNING)
 templist = ""
 
-api_key = "" #Optional API key goes here, it can be accessed on the account settings page for your account on Derpibooru
-
 def split_taglist(tag_str):
  length = 200
  suffix = "..."
