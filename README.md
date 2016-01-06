@@ -54,6 +54,8 @@ Optional JSON elements:
 
 "CommandPrefix" String: This should be a single character prefix for the bot's commands. If the element is not present, the bot will use its default prefix
 
+"derpi_APIKey" String: This is optional, but needed if you want to apply your own filtering when the bot searches for images
+
 # Modules
 The modules are maintained as well
 
