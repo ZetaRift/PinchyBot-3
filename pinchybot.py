@@ -553,7 +553,10 @@ class PinchyBot(ch.RoomManager):  #Main class
 
       elif cmd == "pony":
        if room.name in conf['ExplicitRooms']:
-        apikey = conf["derpi_APIKey"]
+        try:
+         apikey = conf["derpi_APIKey"]
+        except KeyError:
+         apikey= None
        else:
         apikey = None
         
