@@ -553,15 +553,15 @@ class PinchyBot(ch.RoomManager):  #Main class
 
       elif cmd == "pony":
        if room.name in conf['ExplicitRooms']:
-        nofilter = True
+        apikey = conf["derpi_APIKey"]
        else:
-        nofilter = False
+        apykey = None
         
        if args is None or args.isspace():
-        searchstring = derpi.randimg(None, nofilter)
+        searchstring = derpi.randimg(None, apikey)
         room.message(searchstring, True)
        else:
-        searchstring = derpi.randimg(args, nofilter)
+        searchstring = derpi.randimg(args, apikey)
         room.message(searchstring, True)
         
       elif cmd == "quoteadd": #Probably dosen't work.
