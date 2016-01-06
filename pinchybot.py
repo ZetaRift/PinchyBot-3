@@ -555,7 +555,7 @@ class PinchyBot(ch.RoomManager):  #Main class
        if room.name in conf['ExplicitRooms']:
         apikey = conf["derpi_APIKey"]
        else:
-        apykey = None
+        apikey = None
         
        if args is None or args.isspace():
         searchstring = derpi.randimg(None, apikey)
