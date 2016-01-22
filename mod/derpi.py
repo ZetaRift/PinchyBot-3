@@ -45,19 +45,19 @@ def randimg(t, apikey):
     #Param nofilter: Boolean to ignore default filter.
     if apikey != None:
      if t is None:
-      r = requests.get("http://derpibooru.org/search.json?key={key}&q=cute".format(key=apikey))
+      r = requests.get("https://derpibooru.org/search.json?key={key}&q=cute".format(key=apikey))
      else:
       t = t.replace(" ", "+")
       t = t.replace(", ", ",")
-      r = requests.get("http://derpibooru.org/search.json?key={key}&q={t}".format(t=t,key=apikey))
+      r = requests.get("https://derpibooru.org/search.json?key={key}&q={t}".format(t=t,key=apikey))
 
     else:
      if t is None:
-      r = requests.get("http://derpibooru.org/search.json?q=cute")
+      r = requests.get("https://derpibooru.org/search.json?q=cute")
      else:
       t = t.replace(" ", "+")
       t = t.replace(", ", ",")
-      r = requests.get("http://derpibooru.org/search.json?q={t}".format(t=t))
+      r = requests.get("https://derpibooru.org/search.json?q={t}".format(t=t))
       
     if r.status_code != 200: #Back off in events of a non-200 status code
      return "Status returned {status}".format(status=r.status_code)
@@ -69,13 +69,13 @@ def randimg(t, apikey):
      else:
       dat = random.choice(jso['search'])
       iid = dat['id_number']
-      return "http://derpibooru.org/{id} (Tag/Tag combination has {n} images)".format(id=iid,n=str(jso['total']))
-  
+      return "https://derpibooru.org/{id} (Tag/Tag combination has {n} images)".format(id=iid,n=str(jso['total']))
+    
 
 def tagsearch(tag):
     ser1 = tag.replace(" ", "+")
     ser1 = ser1.replace(", ", ",")
-    r = requests.get("http://derpibooru.org/search.json?q={t}".format(t=ser1))
+    r = requests.get("https://derpibooru.org/search.json?q={t}".format(t=ser1))
     if r.status_code != 200: #Back off in events of a non-200 status code
      return "Status returned {status}".format(status=r.status_code)
     else:
@@ -103,7 +103,7 @@ def tagsp(tag):        #Returns URL of spoiler image, returns None (or null) if 
       return "http:"+sp
 
 def thumb(num_id):
-    r = requests.get('http://derpibooru.org/'+num_id+'.json')
+    r = requests.get('https://derpibooru.org/'+num_id+'.json')
     if r.status_code != 200:
      return "Server returned {status}".format(status=r.status_code)
     else:
@@ -152,7 +152,7 @@ def stats_string(numid):
      else:
       thumb = _thumb(img_info)
       
-     return ("{thumb} http://derpibooru.org/{num} | <b>Uploaded at</b>: {uledtime} UTC by {uled} | <b>Score</b>: {score} ({upv} up / {dwv} down) with {faves} faves | <b>Comment count</b>: {cmts} ".format(
+     return ("{thumb} https://derpibooru.org/{num} | <b>Uploaded at</b>: {uledtime} UTC by {uled} | <b>Score</b>: {score} ({upv} up / {dwv} down) with {faves} faves | <b>Comment count</b>: {cmts} ".format(
         thumb=thumb,
         uledtime=uled_time,
         score=_score(img_info),
