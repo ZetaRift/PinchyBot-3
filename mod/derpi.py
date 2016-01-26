@@ -20,7 +20,7 @@ templist = ""
 
 def rating_iterate(taglist):
  tlist = taglist.replace(", ", " ").split()
- return ", ".join([i for i in tlist if i in system_tags])
+ return ", ".join([i for i in tlist if i in system_tags]).title()
 
 def split_taglist(tag_str):
  length = 200
