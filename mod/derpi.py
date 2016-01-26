@@ -18,6 +18,10 @@ Changes are being applied to the derpibooru API
 logging.basicConfig(filename='logs/derpi.log',level=logging.WARNING)
 templist = ""
 
+def rating_iterate(taglist):
+ tlist = taglist.replace(", ", " ").split()
+ return ", ".join([i for i in tlist if i in system_tags])
+
 def split_taglist(tag_str):
  length = 200
  suffix = "..."
@@ -102,13 +106,13 @@ def tagsp(tag):        #Returns URL of spoiler image, returns None (or null) if 
      else:
       return "http:"+sp
 
-def thumb(num_id):
+def rating(num_id):
     r = requests.get('https://derpibooru.org/'+num_id+'.json')
     if r.status_code != 200:
      return "Server returned {status}".format(status=r.status_code)
     else:
      jso = r.json()
-     sp = "http:"+jso['representations']['thumb']
+     sp = "http:"+jso['representations']['rating']
      return str(sp)
 
 def fetch_info(numid):
@@ -126,7 +130,6 @@ _faves = lambda img_info: int(img_info['faves'])
 _cmts = lambda img_info: int(img_info['comment_count'])
 _uled = lambda img_info: img_info['uploader']
 _tags = lambda img_info: split_taglist(img_info['tags'])
-_thumb = lambda img_info: "http:"+img_info['representations']['thumb']
 _format = lambda img_info: img_info['original_format']
 _created_time = lambda img_info: img_info['created_at']
 _updated_time = lambda img_info: img_info['updated_at']
@@ -141,19 +144,10 @@ def stats_string(numid):
     else:
      uled_time = derpitimestamp(_created_time(img_info))
      upd_time = derpitimestamp(_updated_time(img_info))
-     if _tags(img_info).find("explicit") != -1:
-      thumb = "(<b>Explicit</b>)"
-     elif _tags(img_info).find("questionable") != -1:
-      thumb = "(<b>Questionable</b>)"
-     elif _tags(img_info).find("grimdark") != -1:
-      thumb = "(<b>Grimdark</b>)"
-     elif  _format(img_info) == "gif":
-      thumb = ''
-     else:
-      thumb = _thumb(img_info)
+     rating = rating_iterate(_tags(img_info))
       
-     return ("{thumb} https://derpibooru.org/{num} | <b>Uploaded at</b>: {uledtime} UTC by {uled} | <b>Score</b>: {score} ({upv} up / {dwv} down) with {faves} faves | <b>Comment count</b>: {cmts} ".format(
-        thumb=thumb,
+     return ("<b>({rating})</b> https://derpibooru.org/{num} | <b>Uploaded at</b>: {uledtime} UTC by {uled} | <b>Score</b>: {score} ({upv} up / {dwv} down) with {faves} faves | <b>Comment count</b>: {cmts} ".format(
+        rating=rating,
         uledtime=uled_time,
         score=_score(img_info),
         upv=_upv(img_info),
