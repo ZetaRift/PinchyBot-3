@@ -20,6 +20,7 @@ system_tags = ["explicit", "grimdark", "grotesque", "questionable", "safe", "sem
 logging.basicConfig(filename='logs/derpi.log',level=logging.WARNING)
 templist = ""
 
+
 def rating_iterate(taglist):
  tlist = taglist.replace(", ", " ").split()
  return ", ".join([i for i in tlist if i in system_tags]).title()
@@ -131,7 +132,7 @@ _dwv = lambda img_info: int(img_info['downvotes'])
 _faves = lambda img_info: int(img_info['faves'])
 _cmts = lambda img_info: int(img_info['comment_count'])
 _uled = lambda img_info: img_info['uploader']
-_tags = lambda img_info: split_taglist(img_info['tags'])
+_tags = lambda img_info: img_info['tags']
 _format = lambda img_info: img_info['original_format']
 _created_time = lambda img_info: img_info['created_at']
 _updated_time = lambda img_info: img_info['updated_at']
@@ -161,5 +162,5 @@ def stats_string(numid):
         ),
      "Image #{n} tags: {tlist}".format(
      n=numid,
-     tlist=_tags(img_info)
+     tlist=split_taglist(_tags(img_info))
      ))
