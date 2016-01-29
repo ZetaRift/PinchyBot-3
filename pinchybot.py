@@ -322,7 +322,7 @@ class PinchyBot(ch.RoomManager):  #Main class
     global echo
     global quiet
     bl_pass = False
-     
+    unescaped_message = hparser.unescape(message.body)
 
     rstatus = blist(user.name) #Checks if a user is whitelisted
     if rstatus == True:
@@ -330,21 +330,22 @@ class PinchyBot(ch.RoomManager):  #Main class
      bl_pass = True
     else:
      bl_pass = False
-    ts = message.body
+    ts = unescaped_message
     
-    self.safePrint("[" + curtime() + "] (" + room.name + ") "+user.name + ': ' + message.body)
-    try: #Try statement over the bot's commands, unicode works however, but can crash after sending special characters such as Russian letters.
+    self.safePrint("[" + curtime() + "] (" + room.name + ") "+user.name + ': ' + unescaped_message)
+    try: #Try statement over the bot's commands, If something goes wrong, throw a traceback and keep running
      urlpattern = "(https?://\S+)"
      regex = re.compile(urlpattern)
-     url = regex.search(message.body)
+     url = regex.search(unescaped_message)
      cmd = '' #Otherwise UnboundLocalError is raised
      args = ''
 	
-     if message.body:
+     if unescaped_message:
       if bl_pass == True:
+       #Do nothing
        pass
-      elif message.body[0] == cmdprefix: #Command prefix.
-       data = message.body[1:].split(" ", 1)
+      elif unescaped_message[0] == cmdprefix: #Command prefix.
+       data = unescaped_message[1:].split(" ", 1)
 
        if len(data) > 1: #To treat the second word to EOL as args, eg: "$eval" is the command, and "foo.bar()" is the argument parameter, if only command is issued, argument variable will be null
 
@@ -353,10 +354,10 @@ class PinchyBot(ch.RoomManager):  #Main class
        else:
 
         cmd, args = data[0], None
-      elif re.match("((?i)"+conf['Name'].lower()+", (?P<cmd>(\S+)) *(?P<args>(.*)))", message.body): #Another type of issuing a command to the bot
+      elif re.match("((?i)"+conf['Name'].lower()+", (?P<cmd>(\S+)) *(?P<args>(.*)))", unescaped_message): #Another type of issuing a command to the bot
        commandpattern = "((?i)"+conf['Name'].lower()+", (?P<cmd>(\S+)) *(?P<args>(.*)))"
        command_reg = re.compile(commandpattern)
-       rawcommand = command_reg.search(message.body)
+       rawcommand = command_reg.search(unescaped_message)
        cmd = rawcommand.group("cmd")
        if rawcommand.group("args"):
         args = rawcommand.group("args")
@@ -735,21 +736,21 @@ class PinchyBot(ch.RoomManager):  #Main class
 ################################################################
 #Start of raw commands, merely a word without the command prefix
 ################################################################
-     if message.body.startswith("the game"):
+     if unescaped_message.startswith("the game"):
       dish = random.randint(1, 9)
       if dish == 3:
        room.message("QUIET!")
       else:
        print("No.")
 
-     elif message.body.startswith("wat"):
+     elif unescaped_message.startswith("wat"):
       wat = random.randint(1, 20)
       if wat == 5:
        room.message("Wat.")
       else:
        print("No.")
        
-     elif message.body.startswith("ayy"):
+     elif unescaped_message.startswith("ayy"):
       room.message("lmao")
 ################################################################
 #Start of URL parsing
@@ -895,6 +896,10 @@ class PinchyBot(ch.RoomManager):  #Main class
 
       elif cmd == "version":
        pm.message(user, "PinchyBot {ver} on Python {pyver}".format(ver=version_string,pyver=".".join(map(str, sys.version_info[:3]))))
+       
+       
+
+
 if __name__ == "__main__":  #Settings in another file
   #Initial PID printing for verbosity
   print("PID: {pid}".format(pid=str(os.getpid())))
@@ -906,4 +911,3 @@ if __name__ == "__main__":  #Settings in another file
    cmdprefix = "$"
   seen.Seen()
   PinchyBot.easy_start(conf["Rooms"], conf["Name"], conf["Pass"])
-
