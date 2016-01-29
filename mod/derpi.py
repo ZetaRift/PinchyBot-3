@@ -15,6 +15,8 @@ Changes are being applied to the derpibooru API
 
 """
 
+system_tags = ["explicit", "grimdark", "grotesque", "questionable", "safe", "semi-grimdark", "suggestive"]
+
 logging.basicConfig(filename='logs/derpi.log',level=logging.WARNING)
 templist = ""
 
