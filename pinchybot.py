@@ -246,7 +246,15 @@ def ttimer(room, dur, user):
           room.message("Timeup for {u}".format(u=user))
    
    
-  
+def multi_message(room, arraylist): #Circumvents the timing bug, but does not circumvent the network latency, so it /should/ be correctly ordered
+ if type(arraylist) is list:
+  if len(arraylist) > 5:
+   room.message("Too long")
+  else:
+   for i in arraylist:
+    room.message(i, True)
+ else:
+  room.message("Not a list")
    
   
   
@@ -765,8 +773,7 @@ class PinchyBot(ch.RoomManager):  #Main class
         reg = re.compile(derpipattern)
         num = reg.search(url.group(0))
         statstr = derpi.stats_string(num.group("id"))
-        room.message(statstr[0], True)
-        room.message(statstr[1], True)
+        multi_message(room, [statstr[0], statstr[1]])
 
        elif re.match("(https?://(www.)?((youtube[.]com)|(youtu[.]be))\S+)", url.group(0)): #Youtube URLs
         ytpattern = "(https://(www[.])?(?P<domain>(youtube[.]com)|(youtu[.]be))\S+)"
