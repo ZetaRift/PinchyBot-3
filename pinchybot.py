@@ -876,9 +876,9 @@ class PinchyBot(ch.RoomManager):  #Main class
        rand = ['Yes', 'No', 'Outlook so so', 'Absolutely', 'My sources say no', 'Yes definitely', 'Very doubtful', 'Most likely', 'Forget about it', 'Are you kidding?', 'Go for it', 'Not now', 'Looking good', 'Who knows', 'A definite yes', 'You will have to wait', 'Yes, in my due time', 'I have my doubts']
        pm.message(user, random.choice(rand))
 
-      elif cmd == 'bestpony':
-       poni = bestpone()
-       pm.message(user, poni)
+#      elif cmd == 'bestpony':
+#       poni = bestpone()
+#       pm.message(user, poni)
 
       elif cmd == 'ping':
        pm.message(user, 'Pong')
