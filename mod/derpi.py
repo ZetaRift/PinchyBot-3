@@ -15,12 +15,26 @@ Changes are being applied to the derpibooru API
 
 """
 
+system_tags = ["explicit", "grimdark", "grotesque", "questionable", "safe", "semi-grimdark", "suggestive"]
+
 logging.basicConfig(filename='logs/derpi.log',level=logging.WARNING)
 templist = ""
 
-api_key = "" #Optional API key goes here, it can be accessed on the account settings page for your account on Derpibooru
 
-def derpitimestamp(time_string): #Returns in Y-m-d H:M format, timestamp is in ISO 8601 format
+def rating_iterate(taglist):
+ tlist = taglist.replace(", ", " ").split()
+ return ", ".join([i for i in tlist if i in system_tags]).title()
+
+def split_taglist(tag_str):
+ length = 200
+ suffix = "..."
+ taglen = len(tag_str.split(", ", maxsplit=-1)[0:])
+ if len(tag_str) <= length:
+  return tag_str
+ else:
+  return tag_str[:length].rsplit(' ', 1)[0]+suffix+" ("+str(taglen)+" total tags)"
+ 
+def derpitimestamp(time_string): #Returns in Y-m-d H:M format
  ts_re = re.compile("(?P<year>[0-9]*-)?(?P<month>[0-9]*-)(?P<day>[0-9]*)?(T)?(?P<hour>[0-9]*:)?(?P<minute>[0-9]*:)?(?P<second>[0-9]*.)?(?P<millisecond>[0-9]*.)")
  ftime = re.match(ts_re, time_string)
  timestamp_str = "{y}-{mo}-{d} {h}:{m}".format(
@@ -32,22 +46,25 @@ def derpitimestamp(time_string): #Returns in Y-m-d H:M format, timestamp is in I
   )
  return timestamp_str
 
-def randimg(t, nofilter):
-    if nofilter == True:
+def randimg(t, apikey):
+    #Param room: 'Room' object from ch.py
+    #Param t: Search term string
+    #Param nofilter: Boolean to ignore default filter.
+    if apikey != None:
      if t is None:
-      r = requests.get("http://derpibooru.org/search.json?key={key}&q=cute".format(key=api_key))
+      r = requests.get("https://derpibooru.org/search.json?key={key}&q=cute".format(key=apikey))
      else:
       t = t.replace(" ", "+")
       t = t.replace(", ", ",")
-      r = requests.get("http://derpibooru.org/search.json?key={key}&q={t}".format(t=t,key=api_key))
+      r = requests.get("https://derpibooru.org/search.json?key={key}&q={t}".format(t=t,key=apikey))
 
     else:
      if t is None:
-      r = requests.get("http://derpibooru.org/search.json?q=cute")
+      r = requests.get("https://derpibooru.org/search.json?q=cute")
      else:
       t = t.replace(" ", "+")
       t = t.replace(", ", ",")
-      r = requests.get("http://derpibooru.org/search.json?q={t}".format(t=t))
+      r = requests.get("https://derpibooru.org/search.json?q={t}".format(t=t))
       
     if r.status_code != 200: #Back off in events of a non-200 status code
      return "Status returned {status}".format(status=r.status_code)
@@ -55,17 +72,17 @@ def randimg(t, nofilter):
     else:
      jso = r.json()
      if jso['total'] == 0:
-      return("That tag or tag combination does not exist")
+      room.message("That tag or tag combination does not exist")
      else:
       dat = random.choice(jso['search'])
       iid = dat['id_number']
-      return str("http://derpibooru.org/{id} (Tag/Tag combination has {n} images)".format(id=iid,n=str(jso['total'])))
+      return "https://derpibooru.org/{id} (Tag/Tag combination has {n} images)".format(id=iid,n=str(jso['total']))
     
 
-def tagsearch(tag):        #Dosen't work because it says "list indices must be integers, not str" on eval
+def tagsearch(tag):
     ser1 = tag.replace(" ", "+")
     ser1 = ser1.replace(", ", ",")
-    r = requests.get("http://derpibooru.org/search.json?q={t}".format(t=ser1))
+    r = requests.get("https://derpibooru.org/search.json?q={t}".format(t=ser1))
     if r.status_code != 200: #Back off in events of a non-200 status code
      return "Status returned {status}".format(status=r.status_code)
     else:
@@ -92,13 +109,13 @@ def tagsp(tag):        #Returns URL of spoiler image, returns None (or null) if 
      else:
       return "http:"+sp
 
-def thumb(num_id):
-    r = requests.get('http://derpibooru.org/'+num_id+'.json')
+def rating(num_id):
+    r = requests.get('https://derpibooru.org/'+num_id+'.json')
     if r.status_code != 200:
      return "Server returned {status}".format(status=r.status_code)
     else:
      jso = r.json()
-     sp = "http:"+jso['representations']['thumb']
+     sp = "http:"+jso['representations']['rating']
      return str(sp)
 
 def fetch_info(numid):
@@ -116,37 +133,24 @@ _faves = lambda img_info: int(img_info['faves'])
 _cmts = lambda img_info: int(img_info['comment_count'])
 _uled = lambda img_info: img_info['uploader']
 _tags = lambda img_info: img_info['tags']
-_chk_tags = lambda img_info: img_info['tag_ids']
-_thumb = lambda img_info: "http:"+img_info['representations']['thumb']
 _format = lambda img_info: img_info['original_format']
 _created_time = lambda img_info: img_info['created_at']
 _updated_time = lambda img_info: img_info['updated_at']
 
 
 def stats_string(numid):
+    #Param room: 'Room' object from ch.py
+    #Param numid: numid string for image number
     img_info = fetch_info(numid)
     if img_info is None: #Return none if fetch_info sees a non-200 HTTP status code
-     return None
+     room.message("Image dosen't exist?")
     else:
      uled_time = derpitimestamp(_created_time(img_info))
      upd_time = derpitimestamp(_updated_time(img_info))
-     if len(_chk_tags(img_info)) >= 25:
-      templist = "[Too many tags to show]"
-     else:
-      templist = _tags(img_info)
-     if "explicit" in _chk_tags(img_info):
-      thumb = "(<b>Explicit</b>)"
-     elif "questionable" in _chk_tags(img_info):
-      thumb = "(<b>Questionable</b>)"
-     elif "grimdark" in _chk_tags(img_info):
-      thumb = "(<b>Grimdark</b>)"
-     elif  _format(img_info) == "gif":
-      thumb = ''
-     else:
-      thumb = _thumb(img_info)
+     rating = rating_iterate(_tags(img_info))
       
-     return ("{thumb} http://derpibooru.org/{num} | <b>Uploaded at</b>: {uledtime} UTC by {uled} | <b>Score</b>: {score} ({upv} up / {dwv} down) with {faves} faves | <b>Comment count</b>: {cmts} ".format(
-        thumb=thumb,
+     return ("<b>({rating})</b> https://derpibooru.org/{num} | <b>Uploaded at</b>: {uledtime} UTC by {uled} | <b>Score</b>: {score} ({upv} up / {dwv} down) with {faves} faves | <b>Comment count</b>: {cmts} ".format(
+        rating=rating,
         uledtime=uled_time,
         score=_score(img_info),
         upv=_upv(img_info),
@@ -156,7 +160,7 @@ def stats_string(numid):
         uled=_uled(img_info),
         num=numid
         ),
-        "<b>Image #{num} tags</b>: {tgs}".format(
-        tgs=templist,
-        num=numid
-        ))
+     "Image #{n} tags: {tlist}".format(
+     n=numid,
+     tlist=split_taglist(_tags(img_info))
+     ))

@@ -28,7 +28,6 @@ from random import randint
 import lxml.html
 from xml.dom import minidom
 import requests
-import urllib.request
 import _thread as thread
 import json
 from datetime import timedelta
@@ -58,6 +57,8 @@ total = 0
 
 quiet = 0
 
+floodcooldown = False
+
 logging.basicConfig(filename='logs/PinchyBot.log',level=logging.WARNING)
 
 upt = time.time() #Grab current unix time upon execution
@@ -66,6 +67,7 @@ upt = time.time() #Grab current unix time upon execution
 def sighandle(signal, frame):
  s = seen.Seen()
  s.savefile()
+ wz.savedb()
  print("Caught SIGINT, saving and exiting")
  sys.exit(0)
 
@@ -74,20 +76,26 @@ signal.signal(signal.SIGINT, sighandle)
 
 
 def urlparse(url):    #URL parsing for title. Needs lxml
-     f = requests.get(url, stream=True)
-     content_type = f.headers['Content-Type']
-     if f.status_code != 200:
-      return str(f.status_code)
+     h = requests.head(url) #Send a HEAD request first for meta-info such as content type and content length without requesting the entire content
+     content_type = h.headers['Content-Type']
+     if h.status_code != 200:
+      return "Err: "+str(h.status_code)
      else:
       if re.match("(image\S+?(?P<format>(jpeg)|(png)|(gif)))", content_type):
        print("Image URL")
        imgpattern = "(image\S+?(?P<format>(jpeg)|(png)|(gif)))"
-       reg = re.compile(imgpattern)
-       imgformat = reg.search(content_type)
-       s = Image.open(f.raw)
-       msg = "{f} image, {size}, {w} x {h}".format(f=imgformat.group("format").upper(),size=readablesize(int(f.headers["content-length"])),w=s.size[0],h=s.size[1])
-       return msg
+       if int(h.headers["content-length"]) > 4194304: #Ignore if bigger than 4 MiB
+        print("Ignored large image")
+        pass
+       else:
+        reg = re.compile(imgpattern)
+        imgformat = reg.search(content_type)
+        f = requests.get(url, stream=True)
+        s = Image.open(f.raw)
+        msg = "{f} image, {size}, {w} x {h}".format(f=imgformat.group("format").upper(),size=readablesize(int(f.headers["content-length"])),w=s.size[0],h=s.size[1])
+        return msg
       else:
+       f = requests.get(url)
        s = lxml.html.fromstring(f.content) #lxml wants a consistently undecoded file, so f.content does it
        title = '[ '+s.find(".//title").text+" ]"
        return title
@@ -95,10 +103,10 @@ def urlparse(url):    #URL parsing for title. Needs lxml
 def readablesize(i):
  if i >= 1048576:
   size = float(i / 1048576)
-  return "{s} MB".format(s=str("%.2f" % size))
+  return "{s} MiB".format(s=str("%.2f" % size))
  elif i >= 1024:
   size = float(i / 1024)
-  return "{s} KB".format(s=str("%.2f" % size))
+  return "{s} KiB".format(s=str("%.2f" % size))
  else:
   return "{s} Bytes".format(s=str(i))
 
@@ -106,13 +114,6 @@ def slate(tran, lang): #I think they changed the translation API?
     gs = goslate.Goslate()
     tr = gs.translate(tran, lang)
     return tr
-
-
-def readAdmin(user): #Boolean values are better in this case, and on similar defs
- if user in conf["Admins"]:
-  return True
- else:
-  return False
 
 def roll(sides, count):
     r = [random.randrange(1, sides) for i in range(count)]
@@ -230,13 +231,43 @@ def restart():
  py = sys.executable
  s = seen.Seen()
  s.savefile()
+ wz.savedb()
  print("Restarting...")
  os.execl(py, py, * sys.argv)
+ 
+ 
+def ttimer(room, dur, user):
+         count = 0
+         if dur > 172800:
+          room.message("Too high")
+         elif dur < 0:
+          room.message("Not a positive number")
+         else:
+          while count != dur:
+           time.sleep(1)
+           count += 1
+          room.message("Timeup for {u}".format(u=user))
    
    
-  
    
-  
+def multi_message(room, arraylist): #Circumvents the timing bug, but does not circumvent the network latency, so it /should/ appear as correctly ordered in the console
+ if type(arraylist) is list:
+  if len(arraylist) > 5:
+   room.message("Too long")
+  else:
+   for i in arraylist:
+    room.message(i, True)
+ else:
+  room.message("Not a list")
+   
+def cooldown(length):
+ global floodcooldown
+ floodcooldown = True
+ timercount = 0
+ while timercount < length:
+  time.sleep(1)
+  timercount += 1
+ floodcooldown = False  
   
  
 
@@ -251,7 +282,7 @@ class PinchyBot(ch.RoomManager):  #Main class
 
   def onConnect(self, room):
     
-    print("Connected to "+room.name)
+    print("["+curtime()+"] Connected to "+room.name)
     self.setFontColor(conf["FontColor"])
     self.setNameColor(conf["NameColor"])
     self.setFontSize(conf["FontSize"])
@@ -269,20 +300,21 @@ class PinchyBot(ch.RoomManager):  #Main class
  
 
   def onDisconnect(self, room):   #Wouldn't reconnect to the room unless you restart the script
-    ctime = curtime()
-    print("[" + ctime + "] Parted "+room.name+" (Disconnect)")
+    print("[" + curtime() + "] Parted "+room.name+" (Disconnect)")
     
     self.joinRoom(room.name)
 
   def onFloodWarning(self, room):
-    room.setSilent(True)
-    print("Flood warning for "+room.name+"!")
+    print("Flood warning for %s, cooling down" % room.name)
+    thread.start_new_thread(cooldown, (60) )
 
 
 
   def onJoin(self, room, user):
-      ctime = curtime()
-      self.safePrint("[{ts}] {user} joined {room}".format(ts=ctime,user=user.name,room=room.name))
+      s = seen.Seen()
+      s.search(user.name, room.name, True)
+      print("Replaced/Added element")
+      self.safePrint("[{ts}] {user} joined {room}".format(ts=curtime(),user=user.name,room=room.name))
       if conf['Greet'] == True:
        room.setSilent(False)
        room.message("{user} has joined, hi!".format(user=user.name))
@@ -290,52 +322,50 @@ class PinchyBot(ch.RoomManager):  #Main class
        print("Greet omitted")
 
   def onLeave(self, room, user):
-      ctime = curtime()
-      self.safePrint("[{ts}] {user} left {room}".format(ts=ctime,user=user.name,room=room.name))
+      self.safePrint("[{ts}] {user} left {room}".format(ts=curtime(),user=user.name,room=room.name))
       s = seen.Seen()
       s.search(user.name, room.name, True)
       print("Replaced/Added element")
       
   def onBan(self, room, user, target): #Cannot see bans unless the bot is a moderator in the occurring room.
-   ctime = curtime()
-   print("[{ts}] User {t} banned from {r} by {u}".format(ts=ctime,t=target.name,r=room.name,u=user.name))  
+   print("[{ts}] User {t} banned from {r} by {u}".format(ts=curtime(),t=target.name,r=room.name,u=user.name))  
    
   def onUnban(self, room, user, target):
-   ctime = curtime()
-   print("[{ts}] User {t} unbanned from {r} by {u}".format(ts=ctime,t=target.name,r=room.name,u=user.name))
+   print("[{ts}] User {t} unbanned from {r} by {u}".format(ts=curtime(),t=target.name,r=room.name,u=user.name))
    
   def onMessageDelete(self, room, user, message):
-   ctime = curtime() 
-   print("[{ts}] ({r}) Message ({u}: {m}) deleted".format(ts=ctime,r=room.name,u=user.name,m=message.body))   
+   print("[{ts}] ({r}) Message ({u}: {m}) deleted".format(ts=curtime(),r=room.name,u=user.name,m=message.body))   
     
  
   def onMessage(self, room, user, message):
     global echo
     global quiet
-     
+    bl_pass = False
+    unescaped_message = hparser.unescape(message.body)
 
     rstatus = blist(user.name) #Checks if a user is whitelisted
     if rstatus == True:
-     room.setSilent(True)
-     print("User in blacklist")
-    elif quiet == 1:
-     room.setSilent(True)
+     print("User in blacklist, passing")
+     bl_pass = True
     else:
-     room.setSilent(False)
-    ctime = curtime()
-    ts = message.body
+     bl_pass = False
+    ts = unescaped_message
     
-    self.safePrint("[" + ctime + "] (" + room.name + ") "+user.name + ': ' + message.body)
-    try: #Try statement over the bot's commands, unicode works however, but can crash after sending special characters such as Russian letters.
+    self.safePrint("[" + curtime() + "] (" + room.name + ") "+user.name + ': ' + unescaped_message)
+    try: #Try statement over the bot's commands, If something goes wrong, throw a traceback and keep running
      urlpattern = "(https?://\S+)"
      regex = re.compile(urlpattern)
-     url = regex.search(message.body)
+     url = regex.search(unescaped_message)
      cmd = '' #Otherwise UnboundLocalError is raised
      args = ''
 	
-     if message.body:
-      if message.body[0] == "$": #Command prefix.
-       data = message.body[1:].split(" ", 1)
+     if unescaped_message:
+      if bl_pass == True:
+       pass
+      elif floodcooldown == True:
+       pass
+      elif unescaped_message[0] == cmdprefix: #Command prefix.
+       data = unescaped_message[1:].split(" ", 1)
 
        if len(data) > 1: #To treat the second word to EOL as args, eg: "$eval" is the command, and "foo.bar()" is the argument parameter, if only command is issued, argument variable will be null
 
@@ -344,10 +374,10 @@ class PinchyBot(ch.RoomManager):  #Main class
        else:
 
         cmd, args = data[0], None
-      elif re.match("((?i)pinchybot, (?P<cmd>(\S+)) *(?P<args>(.*)))", message.body): #Another type of issuing a command to the bot
-       commandpattern = "((?i)pinchybot, (?P<cmd>(\S+)) *(?P<args>(.*)))"
+      elif re.match("((?i)"+conf['Name'].lower()+", (?P<cmd>(\S+)) *(?P<args>(.*)))", unescaped_message): #Another type of issuing a command to the bot
+       commandpattern = "((?i)"+conf['Name'].lower()+", (?P<cmd>(\S+)) *(?P<args>(.*)))"
        command_reg = re.compile(commandpattern)
-       rawcommand = command_reg.search(message.body)
+       rawcommand = command_reg.search(unescaped_message)
        cmd = rawcommand.group("cmd")
        if rawcommand.group("args"):
         args = rawcommand.group("args")
@@ -361,29 +391,25 @@ class PinchyBot(ch.RoomManager):  #Main class
 ################################################################
 
       if cmd == 'whoami':
-       status = readAdmin(user.name)
-       if status == True:
+       if user.name in conf["Admins"]:
         room.message('Bot admin')
        else:
         room.message('A puny user :3')
         
       elif cmd == 'restart':
-       status = readAdmin(user.name)
-       if status == True:
+       if user.name in conf["Admins"]:
         restart()
 
       elif cmd == 'join':
-       status = readAdmin(user.name)
-       if status == True:
+       if user.name in conf["Admins"]:
         self.joinRoom(args)
 
       elif cmd == 'part':
-       status = readAdmin(user.name)
-       if status == True:
+       if user.name in conf["Admins"]:
         self.leaveRoom(args)
 
       elif cmd == "eval":
-       if readAdmin(user.name) == True:
+       if user.name in conf["Admins"]:
         try:
          room.message(eval(args))
         except Exception as err:
@@ -395,20 +421,18 @@ class PinchyBot(ch.RoomManager):  #Main class
        if echo == 0:
         room.message(args)
        elif echo == 1:
-        if readAdmin(user.name) == True :
+        if user.name in conf["Admins"]:
          room.message(args)
        elif echo == 2:
          print("!say is disabled.")
 
       elif cmd == 'quiet':		#Command that the bot wont respond to any users issuing a command
-       status = readAdmin(user.name)
-       if status == True:
+       if user.name in conf["Admins"]:
         room.setSilent(True)
         quiet = 1
 
       elif cmd == 'enable':
-       status = readAdmin(user.name)
-       if status == True:
+       if user.name in conf["Admins"]:
         room.setSilent(False)
         quiet = 0
 
@@ -486,34 +510,22 @@ class PinchyBot(ch.RoomManager):  #Main class
         print(traceback.format_exc())
 
       elif cmd == "fontcolor":
-       status = readAdmin(user.name)
-       if status == True:
+       if user.name in conf["Admins"]:
         try:
          self.setFontColor(args)
         except:
          room.message("Wrong")
 
       elif cmd == "setfont":
-       status = readAdmin(user.name)
-       if status == True:
+       if user.name in conf["Admins"]:
         self.setFontColor(settings.fontcolor)
         self.setNameColor(settings.namecolor)
         self.setFontSize(settings.fontsize)
         room.message("Done")
 
-
-#      elif cmd == "restart": #Creates child process along with a second connection.
-#       status = readAdmin(user.name)
-#       if status == True:
-#        room.message("Restarting..")
-#        pid = str(os.getpid())
-#        room.disconnect()
-#        os.system("./rstart.sh "+pid)
-
       elif cmd.startswith("echo."):
        sw = cmd.split(".", 1)[1]
-       status = readAdmin(user.name)
-       if status == True:
+       if user.name in conf["Admins"]:
         if sw == "on":
          echo = 0
          room.message("!say command is now usable by all users")
@@ -542,16 +554,14 @@ class PinchyBot(ch.RoomManager):  #Main class
           room.message("Spoiler image for tag <b>{arg}</b>: {spoilerurl}".format(arg=args,spoilerurl=tagct), True)
 
       elif cmd == "fontsize":
-       status = readAdmin(user.name)
-       if status == True:
+       if user.name in conf["Admins"]:
         try:
          self.setFontSize(args)
         except:
          room.message("Wrong")
 
       elif cmd == "namecolor":
-       status = readAdmin(user.name)
-       if status == True:
+       if user.name in conf["Admins"]:
         try:
          self.setNameColor(args)
         except:
@@ -564,60 +574,28 @@ class PinchyBot(ch.RoomManager):  #Main class
 
       elif cmd == "pony":
        if room.name in conf['ExplicitRooms']:
-        nofilter = True
+        try:
+         apikey = conf["derpi_APIKey"]
+        except KeyError:
+         apikey= None
        else:
-        nofilter = False
+        apikey = None
         
        if args is None or args.isspace():
-        rand = derpi.randimg(None, nofilter)
-        room.message(rand)
+        searchstring = derpi.randimg(None, apikey)
+        room.message(searchstring, True)
        else:
-        rand = derpi.randimg(args, nofilter)
-        room.message(rand)
-
-
-      elif cmd.startswith("dex."):   #Pokedex
-       sw = cmd.split(".", 1)[1]
-       if sw == 'name':
-        try:
-         urllib2.urlopen("http://pokemondb.net/pokedex/"+args)
-         ps = "http://pokemondb.net/pokedex/"+args
-         psp = "http://img.pokemondb.net/artwork/"+args+".jpg"
-         room.message(psp+" "+ps)
-        except:
-         room.message("Dosen't exist (Don't use caps)")
-
-       elif sw == 'img':
-        try:
-         urllib2.urlopen("http://img.pokemondb.net/artwork/"+args+".jpg")
-         psp = "http://img.pokemondb.net/artwork/"+args+".jpg"
-         room.message(psp)
-        except:
-         room.message("Dosen't exist (Don't use caps)")
-       elif sw == 'gen1':
-         room.message("#001-#151")
-       elif sw == 'gen2':
-         room.message("#152-#251")
-       elif sw == 'gen3':
-         room.message("#252-#386")
-       elif sw == 'gen4':
-         room.message("#387-#493")
-       elif sw == 'gen5':
-         room.message("#494-#649")
-       elif sw == 'gen6':
-         room.message("#650-#718")
-
-
+        searchstring = derpi.randimg(args, apikey)
+        room.message(searchstring, True)
+        
       elif cmd == "quoteadd": #Probably dosen't work.
-       status = readAdmin(user.name)
-       if status == True:
+       if user.name in conf["Admins"]:
         with open('quotes.txt', 'a') as qfile:
          qfile.write(args)
          room.message("Added quote ("+args+") to file.")
 
       elif cmd == "greetmsg":  #so many if/else statements
-       status = readAdmin(user.name)
-       if status == True:
+       if user.name in conf["Admins"]:
         global greetmsg
 
         if args == "off":
@@ -658,91 +636,13 @@ class PinchyBot(ch.RoomManager):  #Main class
        link = "http://fp.chatango.com/profileimg/%s/%s/%s/full.jpg" % (args[0], args[1], args)
        room.message(link)
 
-      elif cmd.startswith("timer."):
-       sw = cmd.split(".", 1)[1]
-       if sw == 's':
-        def ttimer( dur, u):
-         count = 0
-         while True:
-          time.sleep(1)
-          count += 1
-          if count == dur:
-           print("Timeup")
-           room.message("Timeup for {u}".format(u=user.name))
-           break
+      elif cmd.startswith("timer"):
         try:
-         if int(args) <= 0:
-          room.message("Number needs to be higher than 0")
-         elif int(args) > 172800:
-          room.message("Upper limit is 172800")
-         else:
-          thread.start_new_thread(ttimer, (int(args), user.name ) )
-          room.message("Timer started for %s seconds for %s" % (args, user.name))
-          
+         timetuple = (room, int(args), user.name)
+         thread.start_new_thread(ttimer, (timetuple) )
         except:
+         print(traceback.format_exc())
          room.message("You did it wrong")
-
-       elif sw == 'm':
-        def ttimer( dur, u):
-         count = 0
-         while True:
-          time.sleep(60)
-          count += 1
-          if count == dur:
-           print("Timeup")
-           room.message("Timeup for %s!" % (u))
-           break
-        try:
-         if int(args) <= 0:
-          room.message("Number needs to be higher than 0")
-         elif int(args) > 2880:
-          room.message("Upper limit is 2880")
-         else:
-          thread.start_new_thread(ttimer, (int(args), user.name ) )
-          room.message("Timer started for %s minutes for %s" % (args, user.name))
-          
-        except:
-         room.message("You did it wrong")
-
-       elif sw == 'h':
-        def ttimer( dur, u):
-         count = 0
-         while True:
-          time.sleep(3600)
-          count += 1
-          if count == dur:
-           print("Timeup")
-           room.message("Timeup for %s!" % (u))
-           break
-        try:
-         if int(args) <= 0:
-          room.message("Number needs to be higher than 0")
-         elif int(args) > 48:
-          room.message("Upper limit is 48")
-         else:
-          thread.start_new_thread(ttimer, (int(args), user.name ) )
-          room.message("Timer started for %s hours for %s" % (args, user.name))
-          
-        except:
-         room.message("You did it wrong")
-
-
-
-      elif cmd.startswith("help."):
-       sw = cmd.split(".", 1)[1]
-       hcmd = ['main', 'derpi', 'dex']
-       if sw not in hcmd:
-        room.message("Syntax: !help.directive (Available directives are: main, derpi, dex)")
-       elif sw == 'main':
-        room.message("General commands: !hug, !bestpony, !diabetes, !ping, !8ball, !dice, !google, !flipcoin, !lusers, !otp, !shiny")
-       elif sw == 'derpi':
-        room.message("The !derpi.* command is a function to print stats of an image from derpibooru. (See !derpi.info for available commands)")
-        room.message("URLs matching http://derpiboo.ru/ or http://derpibooru.org/ with the image page will automatically be parsed.")
-       elif sw == 'dex':
-        room.message("National Pokedex. This function links an image of the pokemon, plus the link to its info. The available commands are !dex.name <name of pokemon> (Exclude the brackets and do not use caps), !dex.img <name> (This goes for alternate forms such as Shaymin's Sky forme (shaymin-sky)", True)
-
-
-
 
       elif cmd == "tag":
        null = ['null']
@@ -760,31 +660,34 @@ class PinchyBot(ch.RoomManager):  #Main class
 
 
       elif cmd == "wz":
-       try:
-        jso = json.load(open("wz-data.json", "r"))
-        msg = wz.wstring(jso["users"][user.name]["zip"], jso["users"][user.name]["metric"])
+       if args == None or args.isspace():
+        msg = wz.info_string(None, True, user.name, conf["WZ-APIKey"])
         room.message(msg, True)
-       except Exception as e:
-        print("nope ("+str(e)+")")
-        room.message("I don't have your weather data stored, ask the owner if you want your data stored, otherwise use !wz.zip <zip code>")
+       else:
+        msg = wz.info_string(args, False, user.name, conf["WZ-APIKey"])
+        room.message(msg, True)
 
       elif cmd.startswith ("wz."):
        sw = cmd.split(".", 1)[1]
-       if sw == "zip":
-        try:
-         msg = wz.info_string(args)
-         room.message(msg, True)
-        except:
-         room.message("I need a zip code")
+       if sw == "add":
+        if args == None or args.isspace():
+         room.message("You need to provide a location")
+        else:
+         wz.adduser(user.name, args)
+         room.message("Your info has been added/updated in the database")
+       elif sw == "remove":
+        wz.rmuser(user.name)
+        room.message("Your info has been removed from the database")
+
 
         
 
-      elif cmd == 'metric':
-       met = UserMetric(user.name)
-       if met == 1:
-        room.message("Your setting is currently set to Metric. Ask the bot owner if you want to change this setting.")
-       else:
-        room.message("Your setting is currently set to Imperial(Default setting), ask the bot owner if you want to change this setting.")
+#      elif cmd == 'metric':
+#       met = UserMetric(user.name)
+#       if met == 1:
+#        room.message("Your setting is currently set to Metric. Ask the bot owner if you want to change this setting.")
+#       else:
+#        room.message("Your setting is currently set to Imperial(Default setting), ask the bot owner if you want to change this setting.")
 
       elif cmd == "gimg":
        if room.name in conf['ExplicitRooms']:
@@ -822,15 +725,13 @@ class PinchyBot(ch.RoomManager):  #Main class
         print(traceback.format_exc())
         
       elif cmd == 'bt':
-       status = readAdmin(user.name)
-       if status == True:
+       if user.name in conf["Admins"]:
         with open("blacklist.txt", "a") as f:
          f.write(" {arg}".format(arg=args))
          room.message("Added user <u>{user}</u> to blacklist".format(user=args), True)
          
       elif cmd == 'systime':
-       status = readAdmin(user.name)
-       if status == True:
+       if user.name in conf["Admins"]:
         room.message(curtime())
         
       elif cmd.startswith("ponycd."):
@@ -849,25 +750,28 @@ class PinchyBot(ch.RoomManager):  #Main class
         if res == None:
          room.message("I have not seen {u}".format(u=args))
         else:
-         room.message("I last saw {u} on {r} at {t}".format(u=res[0],r=res[2],t=res[1]))
+         room.message("I last saw {u} on {r} at {t} {tz}".format(u=res[0],r=res[2],t=res[1], tz=gettimezone()))
       
        
 ################################################################
 #Start of raw commands, merely a word without the command prefix
 ################################################################
-     if message.body.startswith("the game"):
+     if unescaped_message.startswith("the game"):
       dish = random.randint(1, 9)
       if dish == 3:
        room.message("QUIET!")
       else:
        print("No.")
 
-     elif message.body.startswith("wat"):
+     elif unescaped_message.startswith("wat"):
       wat = random.randint(1, 20)
       if wat == 5:
        room.message("Wat.")
       else:
        print("No.")
+       
+     elif unescaped_message.startswith("ayy"):
+      room.message("lmao")
 ################################################################
 #Start of URL parsing
 ################################################################
@@ -880,12 +784,8 @@ class PinchyBot(ch.RoomManager):  #Main class
         derpipattern = "(https?://(www.)?((derpibooru[.]org)|(derpiboo[.]ru))(/images/)?/?(?P<id>[0-9]*))"
         reg = re.compile(derpipattern)
         num = reg.search(url.group(0))
-        msg = derpi.stats_string(num.group("id"))
-        if msg is None:
-         room.message("Dosen't exist?")
-        else:
-         room.message(msg[0], True)
-         room.message(msg[1], True)
+        statstr = derpi.stats_string(num.group("id"))
+        multi_message(room, [statstr[0], statstr[1]])
 
        elif re.match("(https?://(www.)?((youtube[.]com)|(youtu[.]be))\S+)", url.group(0)): #Youtube URLs
         ytpattern = "(https://(www[.])?(?P<domain>(youtube[.]com)|(youtu[.]be))\S+)"
@@ -893,12 +793,12 @@ class PinchyBot(ch.RoomManager):  #Main class
         yt_url = reg.search(url.group(0))
         if yt_url.group("domain") == "youtube.com":
          id = yt_url.group(0).split("/watch?v=", 1)[1]
-         msg = yt.stats_string(id)
+         msg = yt.stats_string(id, conf["YT-APIKey"])
          room.message(msg, True)
          #function here
         elif yt_url.group("domain") == "youtu.be":
          id = yt_url.group(0).split(".be/", 1)[1]
-         msg = yt.stats_string(id)
+         msg = yt.stats_string(id, conf["YT-APIKey"])
          room.message(msg, True)
        elif url.group(0).startswith ("https://img.pokemondb.net/artwork/"):
         ignoreurl()
@@ -959,16 +859,14 @@ class PinchyBot(ch.RoomManager):  #Main class
        pm.message(user, "I am a chatango bot coded in python, i was created by chaoticrift/crimsontail0 ( http://chaoticrift.chatango.com/ or http://crimsontail0.chatango.com/ ). The command list is here: http://pastebin.com/H3ktv6VT")
 
       elif cmd == "join":
-       status = readAdmin(user.name)
-       if status == True:
+       if user.name in conf["Admins"]:
         self.joinRoom(args)
         pm.message(user, "Joined "+args)
        else:
         pm.message(user, "Permission denied")
 
       elif cmd == "part":
-       status = readAdmin(user.name)
-       if status == True:
+       if user.name in conf["Admins"]:
         self.leaveRoom(args)
         pm.message(user, "Left "+args)
        else:
@@ -976,9 +874,9 @@ class PinchyBot(ch.RoomManager):  #Main class
 
       elif cmd == "pony":
        if args is None or args.isspace():
-        rand = derpi.randimg(None)
+        rand = derpi.randimg(None, False)
        else:
-        rand = derpi.randimg(args)
+        rand = derpi.randimg(args, False)
        pm.message(user, rand)
 
       elif cmd == "howbig":
@@ -990,9 +888,9 @@ class PinchyBot(ch.RoomManager):  #Main class
        rand = ['Yes', 'No', 'Outlook so so', 'Absolutely', 'My sources say no', 'Yes definitely', 'Very doubtful', 'Most likely', 'Forget about it', 'Are you kidding?', 'Go for it', 'Not now', 'Looking good', 'Who knows', 'A definite yes', 'You will have to wait', 'Yes, in my due time', 'I have my doubts']
        pm.message(user, random.choice(rand))
 
-      elif cmd == 'bestpony':
-       poni = bestpone()
-       pm.message(user, poni)
+#      elif cmd == 'bestpony':
+#       poni = bestpone()
+#       pm.message(user, poni)
 
       elif cmd == 'ping':
        pm.message(user, 'Pong')
@@ -1006,8 +904,7 @@ class PinchyBot(ch.RoomManager):  #Main class
        pm.message(user, rev)
 
       elif cmd == "eval":
-       status = readAdmin(user.name)
-       if status == True:
+       if user.name in conf["Admins"]:
         try:
          logging.info("[" + curtime() + "] eval command used by " + user.name + ", trying to eval " + args)
          pm.message(user, eval(args))
@@ -1026,6 +923,10 @@ if __name__ == "__main__":  #Settings in another file
   #Initial PID printing for verbosity
   print("PID: {pid}".format(pid=str(os.getpid())))
   print("PPID: {ppid}".format(ppid=str(os.getppid())))
+  try:
+   cmdprefix = conf["CommandPrefix"]
+  except KeyError:
+   print("CommandPrefix not defined in config file, going with default prefix")
+   cmdprefix = "$"
   seen.Seen()
   PinchyBot.easy_start(conf["Rooms"], conf["Name"], conf["Pass"])
-

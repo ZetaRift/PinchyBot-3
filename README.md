@@ -1,6 +1,8 @@
 # PinchyBot-3
 PinchyBot for use on chatango group chat rooms, ported to Python 3
 
+Uses a modified version of the chatango python library https://github.com/Nullspeaker/ch.py
+
 # License
 You are free to use and change the bot's code however you want, please note that you must provide credit for the original creator of the bot.
 
@@ -19,6 +21,8 @@ goslate (For the goslate command)
 
 PIL (or 'pillow', for fetching info on image URLs)
 
+dataset (Used for the "seen" module for database storage)
+
 # Config file
 PinchyBot uses a JSON file as a config file, look at settings-example.json for an example
 
@@ -30,6 +34,8 @@ You must create settings.json for the bot to run, the required JSON elements are
 
 "Rooms" String array: A list of rooms for the bot to join, it can be as many as you want
 
+"ExplicitRooms" String array: A list of rooms where the bot can send explicit content, applies for the gimg and the pony command.
+
 "Admins" String array: List of users for the bot to consider as "botadmins", gives access to some commands such as 'eval'
 
 "FontColor" String: 3 digit hexadecimal color code for the bot's text color, #000 is black, #FFF is white
@@ -39,3 +45,20 @@ You must create settings.json for the bot to run, the required JSON elements are
 "FontSize" Integer: Font size for the bot's text
 
 "Greet" Bool: For the bot to greet a joining user, true will greet users, false will omit greets
+
+"WZ-APIKey" String: Required by the wz module.
+
+"YT-APIKey" String: Required by the yt module.
+
+Optional JSON elements:
+
+"CommandPrefix" String: This should be a single character prefix for the bot's commands. If the element is not present, the bot will use its default prefix
+
+"derpi_APIKey" String: This is optional, but needed if you want to apply your own filtering when the bot searches for images
+
+# Modules
+The modules are maintained as well
+
+To use the 'wz' command, an API key is required (Look at mod/wz.py)
+
+For youtube URL parsing, that requires an API key as well.
