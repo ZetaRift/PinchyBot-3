@@ -267,7 +267,8 @@ def cooldown(length):
  while timercount < length:
   time.sleep(1)
   timercount += 1
- floodcooldown = False  
+ floodcooldown = False
+ print("Cooldown stop") 
   
  
 
@@ -306,7 +307,9 @@ class PinchyBot(ch.RoomManager):  #Main class
 
   def onFloodWarning(self, room):
     print("Flood warning for %s, cooling down" % room.name)
-    thread.start_new_thread(cooldown, (60) )
+    t = (60)
+    thread.start_new_thread(cooldown, (t) )
+
 
 
 
