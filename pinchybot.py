@@ -57,8 +57,6 @@ total = 0
 
 quiet = 0
 
-floodcooldown = False
-
 logging.basicConfig(filename='logs/PinchyBot.log',level=logging.WARNING)
 
 upt = time.time() #Grab current unix time upon execution
@@ -260,16 +258,8 @@ def multi_message(room, arraylist): #Circumvents the timing bug, but does not ci
  else:
   room.message("Not a list")
    
-def cooldown(length):
- global floodcooldown
- floodcooldown = True
- timercount = 0
- while timercount < length:
-  time.sleep(1)
-  timercount += 1
- floodcooldown = False  
-  
- 
+
+
 
 ################################################################
 #Main Pinchybot Class, this is where the events are called
@@ -306,7 +296,6 @@ class PinchyBot(ch.RoomManager):  #Main class
 
   def onFloodWarning(self, room):
     print("Flood warning for %s, cooling down" % room.name)
-    thread.start_new_thread(cooldown, (60) )
 
 
 
