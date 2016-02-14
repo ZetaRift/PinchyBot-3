@@ -11,4 +11,4 @@ addons:
       - python3-lxml
       - python-dev
 
-script:  "nosetests -w tests/"
+script:  "nosetests --verbosity=3"
