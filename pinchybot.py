@@ -57,14 +57,15 @@ total = 0
 
 quiet = 0
 
+seendb = None
+
 logging.basicConfig(filename='logs/PinchyBot.log',level=logging.WARNING)
 
 upt = time.time() #Grab current unix time upon execution
 
 
 def sighandle(signal, frame):
- s = seen.Seen()
- s.savefile()
+ seendb.savefile()
  wz.savedb()
  print("Caught SIGINT, saving and exiting")
  sys.exit(0)
@@ -222,8 +223,7 @@ def gettimezone():
  
 def restart():
  py = sys.executable
- s = seen.Seen()
- s.savefile()
+ seendb.savefile()
  wz.savedb()
  print("Restarting...")
  os.execl(py, py, * sys.argv)
@@ -295,8 +295,7 @@ class PinchyBot(ch.RoomManager):  #Main class
 
 
   def onJoin(self, room, user):
-      s = seen.Seen()
-      s.search(user.name, room.name, True)
+      seendb.search(user.name, room.name, True)
       print("Replaced/Added element")
       self.safePrint("[{ts}] {user} joined {room}".format(ts=curtime(),user=user.name,room=room.name))
       if conf['Greet'] == True:
@@ -307,8 +306,7 @@ class PinchyBot(ch.RoomManager):  #Main class
 
   def onLeave(self, room, user):
       self.safePrint("[{ts}] {user} left {room}".format(ts=curtime(),user=user.name,room=room.name))
-      s = seen.Seen()
-      s.search(user.name, room.name, True)
+      seendb.search(user.name, room.name, True)
       print("Replaced/Added element")
       
   def onBan(self, room, user, target): #Cannot see bans unless the bot is a moderator in the occurring room.
@@ -701,13 +699,12 @@ class PinchyBot(ch.RoomManager):  #Main class
        if args == user.name:
         room.message("Are you looking at a mirror?")
        else:
-        s = seen.Seen()
-        res = s.search(args, room.name, False)
+        res = seendb.search(args, room.name, False)
         if res == None:
          room.message("I have not seen {u}".format(u=args))
         else:
          room.message("I last saw {u} on {r} at {t} {tz}".format(u=res[0],r=res[2],t=res[1], tz=gettimezone()))
-      
+
        
 ################################################################
 #Start of raw commands, merely a word without the command prefix
@@ -884,5 +881,5 @@ if __name__ == "__main__":  #Settings in another file
   except KeyError:
    print("CommandPrefix not defined in config file, going with default prefix")
    cmdprefix = "$"
-  seen.Seen()
+  seendb = seen.Seen()
   PinchyBot.easy_start(conf["Rooms"], conf["Name"], conf["Pass"])
