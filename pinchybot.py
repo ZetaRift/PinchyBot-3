@@ -57,6 +57,8 @@ total = 0
 
 quiet = 0
 
+floodcooldown = False
+
 logging.basicConfig(filename='logs/PinchyBot.log',level=logging.WARNING)
 
 upt = time.time() #Grab current unix time upon execution
@@ -83,6 +85,7 @@ def urlparse(url):    #URL parsing for title. Needs lxml
        print("Image URL")
        imgpattern = "(image\S+?(?P<format>(jpeg)|(png)|(gif)))"
        if int(h.headers["content-length"]) > 4194304: #Ignore if bigger than 4 MiB
+        print("Ignored large image")
         pass
        else:
         reg = re.compile(imgpattern)
@@ -100,10 +103,10 @@ def urlparse(url):    #URL parsing for title. Needs lxml
 def readablesize(i):
  if i >= 1048576:
   size = float(i / 1048576)
-  return "{s} MB".format(s=str("%.2f" % size))
+  return "{s} MiB".format(s=str("%.2f" % size))
  elif i >= 1024:
   size = float(i / 1024)
-  return "{s} KB".format(s=str("%.2f" % size))
+  return "{s} KiB".format(s=str("%.2f" % size))
  else:
   return "{s} Bytes".format(s=str(i))
 
@@ -246,7 +249,8 @@ def ttimer(room, dur, user):
           room.message("Timeup for {u}".format(u=user))
    
    
-def multi_message(room, arraylist): #Circumvents the timing bug, but does not circumvent the network latency, so it /should/ be correctly ordered
+   
+def multi_message(room, arraylist): #Circumvents the timing bug, but does not circumvent the network latency, so it /should/ appear as correctly ordered in the console
  if type(arraylist) is list:
   if len(arraylist) > 5:
    room.message("Too long")
@@ -256,7 +260,14 @@ def multi_message(room, arraylist): #Circumvents the timing bug, but does not ci
  else:
   room.message("Not a list")
    
-  
+def cooldown(length):
+ global floodcooldown
+ floodcooldown = True
+ timercount = 0
+ while timercount < length:
+  time.sleep(1)
+  timercount += 1
+ floodcooldown = False  
   
  
 
@@ -294,8 +305,8 @@ class PinchyBot(ch.RoomManager):  #Main class
     self.joinRoom(room.name)
 
   def onFloodWarning(self, room):
-    room.setSilent(True)
-    print("Flood warning for "+room.name+"!")
+    print("Flood warning for %s, cooling down" % room.name)
+    thread.start_new_thread(cooldown, (60) )
 
 
 
@@ -350,7 +361,8 @@ class PinchyBot(ch.RoomManager):  #Main class
 	
      if unescaped_message:
       if bl_pass == True:
-       #Do nothing
+       pass
+      elif floodcooldown == True:
        pass
       elif unescaped_message[0] == cmdprefix: #Command prefix.
        data = unescaped_message[1:].split(" ", 1)
