@@ -1,6 +1,9 @@
 {
 "Name":"Foobar",
 "Pass":"secretpassword",
+"WZ-APIKey":"",
+"YT-APIKey":"",
+"derpi_APIKey":"",
 "Rooms":[
 "room-1",
 "room-2"
@@ -9,13 +12,15 @@
 "user1",
 "user2"
 ],
+
 "ExplicitRooms":[
 "room-1",
 "room-2"
 ],
+
 "FontColor":"FFF",
 "NameColor":"FFF",
-"FontSize":14,
+"FontSize":11,
 "Greet":false
 
 }
