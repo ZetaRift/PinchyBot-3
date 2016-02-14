@@ -10,3 +10,5 @@ addons:
       - libxslt-dev
       - python3-lxml
       - python-dev
+
+script:  "nosetests -w tests/"
