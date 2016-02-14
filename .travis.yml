@@ -8,4 +8,5 @@ addons:
     packages:
       - libxml2-dev
       - libxslt-dev
+      - python3-lxml
       - python-dev
