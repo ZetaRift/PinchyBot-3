@@ -310,6 +310,13 @@ class PinchyBot(ch.RoomManager):  #Main class
     t = (60)
     thread.start_new_thread(cooldown, (t) )
 
+    
+  def onFloodBan(self, room):
+    print("Floodban on %s" % room.name)
+    
+  def onFloodBanRepeat(self, room):
+    print("Cannot send to %s due to floodban" % room.name)
+
 
 
 
