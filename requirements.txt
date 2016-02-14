@@ -1,5 +1,4 @@
 goslate
-lxml
 requests
 pytz
 Pillow
