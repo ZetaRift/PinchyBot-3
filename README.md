@@ -1,4 +1,4 @@
-# PinchyBot-3
+# PinchyBot-3 [![Build Status](https://travis-ci.org/ZetaRift/PinchyBot-3.svg?branch=master)](https://travis-ci.org/ZetaRift/PinchyBot-3)
 PinchyBot for use on chatango group chat rooms, ported to Python 3
 
 Uses a modified version of the chatango python library https://github.com/Nullspeaker/ch.py
