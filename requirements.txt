@@ -2,4 +2,4 @@ goslate
 lxml
 requests
 pytz
-PIL
+Pillow
