@@ -168,11 +168,6 @@ def tempconv(pfix, value):
        return str(float(tmp))
 
 
-#def imgspec(url):
-#    mime = ['.jpg', '.png', '.gif']
-#    i = urllib2.urlopen(url)
-#    return i.info()
-
 def uhex(binary):
     n = int(binary, 2)
     nt = binascii.unhexlify('%x' % n)
@@ -428,14 +423,6 @@ class PinchyBot(ch.RoomManager):  #Main class
       elif cmd == 'hug':
        room.message('*hugs {user}*'.format(user=user.name))
 
-#      elif cmd == 'bestpony':
-#       poni = random.choice(open('bestpony.txt', 'r').readlines())
-#       room.message(poni)
-
-#      elif cmd == 'diabetes': # !pony probably makes this obsolete
-#       dia = random.choice(open('diabetes.txt', 'r').readlines())
-#       room.message(dia)
-
       elif cmd == 'ping':
        room.message('Pong')
 
@@ -602,16 +589,6 @@ class PinchyBot(ch.RoomManager):  #Main class
        else:
         room.message("Permission denied")
 
-#      elif cmd == "quote":
-#       qmsg = random.choice(open('quotes.txt', 'r').readlines())
-#       room.message(qmsg)
-
-#      elif cmd == "sauce":
-#       rstatus = readRoom(room.name)
-#       if rstatus == True:
-#        sauce = random.choice(open('sauce.txt', 'r').readlines())
-#        room.message(sauce)
-
       elif cmd == "howbig":
        lines = str(len(open('pinchybot.py').readlines()))
        size = os.stat("pinchybot.py")
@@ -667,16 +644,6 @@ class PinchyBot(ch.RoomManager):  #Main class
        elif sw == "remove":
         wz.rmuser(user.name)
         room.message("Your info has been removed from the database")
-
-
-        
-
-#      elif cmd == 'metric':
-#       met = UserMetric(user.name)
-#       if met == 1:
-#        room.message("Your setting is currently set to Metric. Ask the bot owner if you want to change this setting.")
-#       else:
-#        room.message("Your setting is currently set to Imperial(Default setting), ask the bot owner if you want to change this setting.")
 
       elif cmd == "gimg":
        if room.name in conf['ExplicitRooms']:
