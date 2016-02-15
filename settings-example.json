@@ -13,6 +13,11 @@
 "user2"
 ],
 
+"IgnoredURLs":[
+"http://foo.bar1/",
+"https://foo.bar2/"
+],
+
 "ExplicitRooms":[
 "room-1",
 "room-2"
