@@ -40,11 +40,12 @@ import signal
 from functools import reduce
 from PIL import Image
 from pytz import reference
+import html.parser as htmlparser
 
 ################################################################
 #Major.Minor.Micro
 ################################################################
-version_string = "0.19.0-beta"
+version_string = "0.19.1-beta"
 
 ################################################################
 #Some global variables
@@ -62,6 +63,8 @@ seendb = None
 logging.basicConfig(filename='logs/PinchyBot.log',level=logging.WARNING)
 
 upt = time.time() #Grab current unix time upon execution
+
+hparser = htmlparser.HTMLParser()
 
 
 def sighandle(signal, frame):
@@ -343,8 +346,6 @@ class PinchyBot(ch.RoomManager):  #Main class
 	
      if unescaped_message:
       if bl_pass == True:
-       pass
-      elif floodcooldown == True:
        pass
       elif unescaped_message[0] == cmdprefix: #Command prefix.
        data = unescaped_message[1:].split(" ", 1)
