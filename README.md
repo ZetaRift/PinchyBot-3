@@ -50,6 +50,8 @@ You must create settings.json for the bot to run, the required JSON elements are
 
 "YT-APIKey" String: Required by the yt module.
 
+"IgnoredURLs" String list: Required, but can be empty if you don't want the bot ignoring any URLs it sees
+
 Optional JSON elements:
 
 "CommandPrefix" String: This should be a single character prefix for the bot's commands. If the element is not present, the bot will use its default prefix
