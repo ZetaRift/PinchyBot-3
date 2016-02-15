@@ -552,7 +552,7 @@ class PinchyBot(ch.RoomManager):  #Main class
         try:
          apikey = conf["derpi_APIKey"]
         except KeyError:
-         apikey= None
+         apikey = None
        else:
         apikey = None
         
