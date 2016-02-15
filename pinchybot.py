@@ -44,7 +44,7 @@ from pytz import reference
 ################################################################
 #Major.Minor.Micro
 ################################################################
-version_string = "1.91.1"
+version_string = "0.19.0-beta"
 
 ################################################################
 #Some global variables
@@ -732,6 +732,8 @@ class PinchyBot(ch.RoomManager):  #Main class
      elif url:
       if user.name == conf["Name"].lower():
        print("Not parsing own URL")
+      elif any(url.group(0).startswith(item) for item in conf["IgnoredURLs"]):
+       print("Ignored URL")
       else:
        if re.match("(https?://(www.)?((derpibooru[.]org)|(derpiboo[.]ru))\S+)", url.group(0)): #Deripbooru URLs
         derpipattern = "(https?://(www.)?((derpibooru[.]org)|(derpiboo[.]ru))(/images/)?/?(?P<id>[0-9]*))"
@@ -753,8 +755,6 @@ class PinchyBot(ch.RoomManager):  #Main class
          id = yt_url.group(0).split(".be/", 1)[1]
          msg = yt.stats_string(id, conf["YT-APIKey"])
          room.message(msg, True)
-       elif url.group(0).startswith ("https://img.pokemondb.net/artwork/"):
-        ignoreurl()
         
        elif re.match("(https?://(www.)?fimfiction[.]net\S+)", url.group(0)): #FiMFiction URLs
         msg = fimfiction.statstring(url.group(0))
