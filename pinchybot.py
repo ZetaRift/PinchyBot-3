@@ -45,7 +45,7 @@ import html.parser as htmlparser
 ################################################################
 #Major.Minor.Micro
 ################################################################
-version_string = "0.19.2-beta"
+version_string = "0.20.0-beta"
 
 ################################################################
 #Some global variables
@@ -267,8 +267,6 @@ def multi_message(room, arraylist): #Circumvents the timing bug, but does not ci
 class PinchyBot(ch.RoomManager):  #Main class
 
 
-
-
   def onConnect(self, room):
     print("["+curtime()+"] Connected to "+room.name)
     self.setFontColor(conf["FontColor"])
@@ -295,7 +293,20 @@ class PinchyBot(ch.RoomManager):  #Main class
      partcommandisused = False
      pass
     else:
+     roomtup = (self, room.name)
+     thread.start_new_thread(self.conntimeout, (roomtup) )
      self.joinRoom(room.name)
+     
+  def conntimeout(self, room, roomstr):
+   c = 0
+   print("Waiting for timeout..")
+   while self.getRoom(roomstr) == None:
+    time.sleep(1)
+    c += 1
+    if c >= 60:
+     print("Timeout")
+     restart()
+   print("Timeout abort")
 
   def onFloodWarning(self, room):
     print("Flood warning for %s, cooling down" % room.name)
