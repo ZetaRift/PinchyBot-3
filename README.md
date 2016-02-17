@@ -3,6 +3,8 @@ PinchyBot for use on chatango group chat rooms, ported to Python 3
 
 Uses a modified version of the chatango python library https://github.com/Nullspeaker/ch.py
 
+Do note that the bot is currently in a non-production use state, and bugs may be present, use at your own risk
+
 ## License
 You are free to use and change the bot's code however you want, please note that you must provide credit for the original creator of the bot.
 
