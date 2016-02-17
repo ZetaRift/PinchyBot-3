@@ -45,7 +45,7 @@ import html.parser as htmlparser
 ################################################################
 #Major.Minor.Micro
 ################################################################
-version_string = "0.19.1-beta"
+version_string = "0.19.2-beta"
 
 ################################################################
 #Some global variables
@@ -59,6 +59,8 @@ total = 0
 quiet = 0
 
 seendb = None
+
+partcommandisused = False
 
 logging.basicConfig(filename='logs/PinchyBot.log',level=logging.WARNING)
 
@@ -258,7 +260,6 @@ def multi_message(room, arraylist): #Circumvents the timing bug, but does not ci
    
 
 
-
 ################################################################
 #Main Pinchybot Class, this is where the events are called
 ################################################################
@@ -269,7 +270,6 @@ class PinchyBot(ch.RoomManager):  #Main class
 
 
   def onConnect(self, room):
-    
     print("["+curtime()+"] Connected to "+room.name)
     self.setFontColor(conf["FontColor"])
     self.setNameColor(conf["NameColor"])
@@ -288,9 +288,14 @@ class PinchyBot(ch.RoomManager):  #Main class
  
 
   def onDisconnect(self, room):   #Wouldn't reconnect to the room unless you restart the script
+    global partcommandisused
     print("[" + curtime() + "] Parted "+room.name+" (Disconnect)")
     
-    self.joinRoom(room.name)
+    if partcommandisused == True:
+     partcommandisused = False
+     pass
+    else:
+     self.joinRoom(room.name)
 
   def onFloodWarning(self, room):
     print("Flood warning for %s, cooling down" % room.name)
@@ -325,6 +330,7 @@ class PinchyBot(ch.RoomManager):  #Main class
   def onMessage(self, room, user, message):
     global echo
     global quiet
+    global partcommandisused
     bl_pass = False
     unescaped_message = hparser.unescape(message.body)
 
@@ -389,6 +395,7 @@ class PinchyBot(ch.RoomManager):  #Main class
 
       elif cmd == 'part':
        if user.name in conf["Admins"]:
+        partcommandisused = True
         self.leaveRoom(args)
 
       elif cmd == "eval":
@@ -789,6 +796,7 @@ class PinchyBot(ch.RoomManager):  #Main class
    pm._connect()
 
   def onPMMessage(self, pm, user, body):
+    global partcommandisused
     self.safePrint('['+curtime()+'] (PM) ' + user.name + ': ' + body) # '[HH:MM:SS](PM) username: message string'
     if body[0] == "$":     #Command prefix
 
@@ -821,6 +829,7 @@ class PinchyBot(ch.RoomManager):  #Main class
 
       elif cmd == "part":
        if user.name in conf["Admins"]:
+        partcommandisused = True
         self.leaveRoom(args)
         pm.message(user, "Left "+args)
        else:
