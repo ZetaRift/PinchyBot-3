@@ -314,8 +314,6 @@ class PinchyBot(ch.RoomManager):  #Main class
 
 
   def onJoin(self, room, user):
-      seendb.search(user.name, room.name, True)
-      print("Replaced/Added element")
       self.safePrint("[{ts}] {user} joined {room}".format(ts=curtime(),user=user.name,room=room.name))
       if conf['Greet'] == True:
        room.setSilent(False)
