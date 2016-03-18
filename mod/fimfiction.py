@@ -1,10 +1,13 @@
 import requests
+import re
 
-
+reg = "(\/(\d[0-9]+)\/)"
 
 
 def grab_info(story_URL): #Either the number ID or the whole url works
- r = requests.get('http://www.fimfiction.net/api/story.php?story={url}'.format(url=story_URL))
+ idreg = re.compile(reg)
+ id = idreg.search(story_URL)
+ r = requests.get('http://www.fimfiction.net/api/story.php?story={sid}'.format(sid=id.group(2)))
  if r.status_code != 200:
   return None
  else:
@@ -21,7 +24,7 @@ _chapters = lambda fic_info: int(fic_info["story"]["chapter_count"])
 _author = lambda fic_info: fic_info["story"]["author"]["name"]
 
 
-def statstring(url): #Use this for parsing out the info.
+def statstring(url):
  fic_info = grab_info(url)
  if fic_info is None:
   return "Nothing"
