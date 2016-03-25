@@ -9,8 +9,10 @@ requests
 pytz
 """
 #Configuration is stored in a JSON file: "Name" string, "Pass" string, "Rooms" string array, "FontColor" string, "NameColor" string, and "FontSize" integer
-
-
+import sys
+if sys.version_info < (3, 0):
+ print("Requires python 3.x, exiting.")
+ sys.exit(1)
 ################################
 #Imports
 ################################
@@ -19,7 +21,6 @@ import string
 import os
 import random
 import time
-import sys
 import datetime
 import logging
 import binascii
@@ -45,7 +46,7 @@ import html.parser as htmlparser
 ################################################################
 #Major.Minor.Micro
 ################################################################
-version_string = "0.20.0-beta"
+version_string = "0.20.2-beta"
 
 ################################################################
 #Some global variables
