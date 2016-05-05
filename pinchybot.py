@@ -46,7 +46,7 @@ import html.parser as htmlparser
 ################################################################
 #Major.Minor.Micro
 ################################################################
-version_string = "0.20.2-beta"
+version_string = "0.21.0-beta"
 
 ################################################################
 #Some global variables
@@ -647,6 +647,14 @@ class PinchyBot(ch.RoomManager):  #Main class
         room.message(msg, True)
        else:
         msg = wz.info_string(args, False, user.name, conf["WZ-APIKey"])
+        room.message(msg, True)
+        
+      elif cmd == "wf":
+       if args == None or args.isspace():
+        msg = wz.forecast_string(None, True, user.name, conf["WZ-APIKey"])
+        room.message(msg, True)
+       else:
+        msg = wz.forecast_string(args, False, user.name, conf["WZ-APIKey"])
         room.message(msg, True)
 
       elif cmd.startswith ("wz."):
