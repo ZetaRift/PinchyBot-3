@@ -75,7 +75,7 @@ def randimg(t, apikey):
       room.message("That tag or tag combination does not exist")
      else:
       dat = random.choice(jso['search'])
-      iid = dat['id_number']
+      iid = int(dat['id'])
       return "https://derpibooru.org/{id} (Tag/Tag combination has {n} images)".format(id=iid,n=str(jso['total']))
     
 
